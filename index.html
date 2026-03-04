@@ -7,19 +7,35 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  
   <div id="welcome-modal" class="modal-overlay" style="display: none;">
     <div class="modal-box">
       <div class="carousel-slide active" id="slide-1">
         <h3>👋 ¡Bienvenido!</h3>
         <p>Esta herramienta fue creada momentáneamente para el plan de estudios 2023 de <b>Ingeniería en Sistemas de Información</b>. Si bien por ahora es la única disponible, no se descarta ampliar la web a otras carreras en el futuro.</p>
       </div>
-      
+
       <div class="carousel-slide" id="slide-2" style="display: none;">
+        <h3>🎮 ¿Cómo se usa?</h3>
+        
+        <div class="instruction-desktop">
+          <p>Usá el <b>Click Izquierdo</b> sobre una materia para marcarla como <b>Aprobada</b> ✅.</p>
+          <p>Usá el <b>Click Derecho</b> para marcarla como <b>Cursada</b> 📖.</p>
+          <div class="gif-placeholder">Acá irá el GIF demostrativo (PC)</div>
+        </div>
+
+        <div class="instruction-mobile">
+          <p>Simplemente <b>tocá una materia</b> para desplegar el menú de opciones y seleccionar si está Aprobada ✅ o Cursada 📖.</p>
+          <div class="gif-placeholder">Acá irá el GIF demostrativo (Celular)</div>
+        </div>
+      </div>
+      
+      <div class="carousel-slide" id="slide-3" style="display: none;">
         <h3>💾 Guardado Automático</h3>
         <p>Tu progreso en la carrera se guarda automáticamente en tu navegador mediante <b>Local Storage</b>, sin necesidad de cuentas ni registros. Más adelante, si lo necesitás, vas a poder eliminar todos estos datos usando el botón de "Reiniciar" ubicado al final de la página.</p>
       </div>
       
-      <div class="carousel-slide" id="slide-3" style="display: none;">
+      <div class="carousel-slide" id="slide-4" style="display: none;">
         <h3>☕ Apoyá el Proyecto</h3>
         <p>Por el momento, la única forma de dar una mano para mantener y mejorar el proyecto es invitándome un cafecito. ¡Toda ayuda suma muchísimo!</p>
         
@@ -40,7 +56,7 @@
           <span class="dot active" id="dot-1"></span>
           <span class="dot" id="dot-2"></span>
           <span class="dot" id="dot-3"></span>
-        </div>
+          <span class="dot" id="dot-4"></span> </div>
         <div class="buttons">
           <button id="btn-prev" class="btn-secondary" style="visibility: hidden;" onclick="changeSlide(-1)">Atrás</button>
           <button id="btn-next" class="btn-primary" onclick="changeSlide(1)">Siguiente</button>
@@ -52,6 +68,12 @@
 
   <div class="tooltip" id="tooltip"></div>
 
+  <div id="action-menu" class="action-menu" style="display: none;">
+    <button class="action-btn" id="btn-action-aprobada" onclick="setAction('aprobada')">✅ Aprobada</button>
+    <button class="action-btn" id="btn-action-cursada" onclick="setAction('cursada')">📖 Cursada</button>
+    <button class="action-btn" id="btn-action-desmarcar" onclick="setAction('available')">🔄 Desmarcar</button>
+  </div>
+
   <header>
     <div class="header-titles">
       <div class="logo">Plan de estudios <span>dinámico</span></div>
@@ -61,12 +83,15 @@
     <div class="legend">
       <div class="legend-item"><div class="legend-dot ld-disabled"></div>Bloqueada</div>
       <div class="legend-item"><div class="legend-dot ld-available"></div>Disponible</div>
-      <div class="legend-item"><div class="legend-dot ld-cursada"></div>Cursada (clic der.)</div>
-      <div class="legend-item"><div class="legend-dot ld-aprobada"></div>Aprobada (clic izq.)</div>
+      <div class="legend-item"><div class="legend-dot ld-cursada"></div>Cursada</div>
+      <div class="legend-item"><div class="legend-dot ld-aprobada"></div>Aprobada</div>
     </div>
-    <div class="hint">
-      Clic izq → Aprobada<br>
-      Clic der → Cursada
+
+    <div class="header-actions">
+      <a href="https://cafecito.app/mateogeffroy" target="_blank" class="cafecito-btn header-cafecito">
+        ☕ Invitame un cafecito
+      </a>
+      <button class="help-btn" onclick="openWelcomeModal()" title="Ayuda y tutorial">?</button>
     </div>
   </header>
 
@@ -120,9 +145,7 @@
       <button class="btn-primary" style="width: 100%;" onclick="document.getElementById('ingeniero-modal').style.display='none'">Cerrar</button>
     </div>
   </div>
-  <a href="https://cafecito.app/mateogeffroy" target="_blank" class="cafecito-btn">
-    ☕ Invitame un cafecito
-  </a>
+
   <script src="data.js"></script>
   <script src="script.js"></script>
 </body>

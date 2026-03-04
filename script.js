@@ -95,15 +95,33 @@ function renderCard(subject) {
     <div class="subject-status-icon">${icon}</div>
   `;
 
-  // ACÁ EL CAMBIO: Solo bloqueamos el click a las tarjetas "Resumen" (Ej: Electivas 3° Nivel)
   if (!subject.isElectivePlaceholder) {
+    // Evento Click Izquierdo / Toque Simple
     div.addEventListener('click', (e) => {
       e.preventDefault();
-      handleClick(subject.id, 'aprobada');
+      e.stopPropagation();
+      
+      // Si el puntero es "grueso" (pantalla táctil), abrimos el menú
+      if (window.matchMedia("(pointer: coarse)").matches) {
+        openActionMenu(subject.id, div);
+      } else {
+        // Si es mouse, lo tomamos como click izquierdo normal
+        handleClick(subject.id, 'aprobada');
+      }
     });
+    
+    // Evento Click Derecho / Toque Mantenido
     div.addEventListener('contextmenu', (e) => {
       e.preventDefault();
-      handleClick(subject.id, 'cursada');
+      e.stopPropagation();
+      
+      if (window.matchMedia("(pointer: coarse)").matches) {
+        // Si mantiene presionado el dedo en el celu, también abrimos el menú para atajar el evento nativo
+        openActionMenu(subject.id, div);
+      } else {
+        // Si es mouse, lo tomamos como click derecho normal
+        handleClick(subject.id, 'cursada');
+      }
     });
   }
 
@@ -148,6 +166,93 @@ function handleClick(id, action) {
     setTimeout(() => card.classList.remove('popping'), 300);
   }
 }
+
+// ─── LÓGICA DEL MENÚ DESPLEGABLE ───
+let currentSelectedId = null;
+const actionMenu = document.getElementById('action-menu');
+
+function openActionMenu(id, cardElement) {
+  if (state[id] === 'disabled') return;
+  
+  currentSelectedId = id;
+  const subject = getSubjectById(id);
+  
+  hideTooltip(); // Ocultamos el tooltip para que no moleste en el celu
+
+  // Calculamos dónde está la tarjeta en la pantalla
+  const rect = cardElement.getBoundingClientRect();
+  actionMenu.style.display = 'flex';
+  
+  // Posicionamos el menú justo abajo de la tarjeta
+  let topPos = rect.bottom + 5;
+  let leftPos = rect.left;
+  
+  // Si el menú se va a salir por abajo de la pantalla, lo dibujamos arriba de la tarjeta
+  if (topPos + actionMenu.offsetHeight > window.innerHeight) {
+    topPos = rect.top - actionMenu.offsetHeight - 5;
+  }
+  
+  actionMenu.style.top = topPos + 'px';
+  actionMenu.style.left = leftPos + 'px';
+
+  // Ocultamos el botón "Aprobada" si es el Seminario, ya que se aprueba solo
+  const btnAprobada = document.getElementById('btn-action-aprobada');
+  if (subject.isSeminario) {
+    btnAprobada.style.display = 'none'; 
+  } else {
+    btnAprobada.style.display = 'flex';
+  }
+}
+
+function setAction(action) {
+  if (currentSelectedId) {
+    const id = currentSelectedId;
+    const subject = getSubjectById(id);
+    
+    // Forzamos el estado que el usuario eligió en el menú
+    if (subject.isSeminario) {
+      if (action === 'cursada') state[id] = 'cursada';
+      else if (action === 'available') state[id] = 'available';
+    } else {
+      state[id] = action;
+    }
+
+    // Actualizamos toda la app
+    updateAllAvailability();
+    updateElectivePlaceholders(); 
+    checkMilestones();
+    refreshAll();
+    updateStats();
+    saveProgress(); 
+
+    // Animación visual
+    const card = document.getElementById('card-' + id);
+    if (card) {
+      card.classList.remove('popping');
+      void card.offsetWidth;
+      card.classList.add('popping');
+      setTimeout(() => card.classList.remove('popping'), 300);
+    }
+  }
+  closeActionMenu();
+}
+
+function closeActionMenu() {
+  if (actionMenu) actionMenu.style.display = 'none';
+  currentSelectedId = null;
+}
+
+// Cerrar el menú si el usuario toca en cualquier otra parte de la pantalla o scrollea
+document.addEventListener('click', (e) => {
+  if (actionMenu && !actionMenu.contains(e.target) && !e.target.closest('.subject-card')) {
+    closeActionMenu();
+  }
+});
+
+document.addEventListener('scroll', () => {
+  closeActionMenu();
+  hideTooltip();
+}, { passive: true });
 
 function checkMilestones() {
   // 1. Analista en Sistemas (Obligatorias 1 al 3 + Electivas de 3ro)
@@ -348,7 +453,7 @@ function buildLayout() {
 
 // ─── MODAL LOGIC ──────────────────────────────────────────────────────────────
 let currentSlide = 1;
-const totalSlides = 3;
+const totalSlides = 4; // ¡Actualizado a 4 slides!
 
 function updateModalUI() {
   for(let i=1; i<=totalSlides; i++) {
@@ -385,6 +490,13 @@ function checkFirstVisit() {
     document.getElementById('welcome-modal').style.display = 'flex';
     updateModalUI();
   }
+}
+
+// NUEVA FUNCIÓN: Abrir el modal manualmente desde el botón "?"
+function openWelcomeModal() {
+  currentSlide = 1; // Resetea el modal al primer slide
+  document.getElementById('welcome-modal').style.display = 'flex';
+  updateModalUI();
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
