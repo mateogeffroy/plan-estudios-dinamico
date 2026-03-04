@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plan de estudios dinámico</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="welcome-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-box">
+      <div class="carousel-slide active" id="slide-1">
+        <h3>👋 ¡Bienvenido!</h3>
+        <p>Esta herramienta fue creada momentáneamente para el plan de estudios 2023 de <b>Ingeniería en Sistemas de Información</b>. Si bien por ahora es la única disponible, no se descarta ampliar la web a otras carreras en el futuro.</p>
+      </div>
+      
+      <div class="carousel-slide" id="slide-2" style="display: none;">
+        <h3>💾 Guardado Automático</h3>
+        <p>Tu progreso en la carrera se guarda automáticamente en tu navegador mediante <b>Local Storage</b>, sin necesidad de cuentas ni registros. Más adelante, si lo necesitás, vas a poder eliminar todos estos datos usando el botón de "Reiniciar" ubicado al final de la página.</p>
+      </div>
+      
+      <div class="carousel-slide" id="slide-3" style="display: none;">
+        <h3>☕ Apoyá el Proyecto</h3>
+        <p>Por el momento, la única forma de dar una mano para mantener y mejorar el proyecto es invitándome un cafecito. ¡Toda ayuda suma muchísimo!</p>
+        
+        <div style="display: flex; justify-content: center; margin: 25px 0;">
+          <a href="https://cafecito.app/mateogeffroy" target="_blank" class="cafecito-btn" style="position: static; box-shadow: none;">
+            ☕ Invitame un cafecito
+          </a>
+        </div>
+        
+        <div style="font-size: 0.8rem; text-align: center; border-top: 1px solid var(--border); padding-top: 15px;">
+          <span style="color: var(--muted);">Ante cualquier error o sugerencia, contactarse a:</span><br>
+          <a href="mailto:mateogeffroy.dev@gmail.com" style="color: var(--accent); text-decoration: none; font-weight: 700; letter-spacing: 0.05em;">mateogeffroy.dev@gmail.com</a>
+        </div>
+      </div>
+      
+      <div class="modal-controls" style="margin-top: 25px;">
+        <div class="dots">
+          <span class="dot active" id="dot-1"></span>
+          <span class="dot" id="dot-2"></span>
+          <span class="dot" id="dot-3"></span>
+        </div>
+        <div class="buttons">
+          <button id="btn-prev" class="btn-secondary" style="visibility: hidden;" onclick="changeSlide(-1)">Atrás</button>
+          <button id="btn-next" class="btn-primary" onclick="changeSlide(1)">Siguiente</button>
+          <button id="btn-close" class="btn-primary" style="display: none;" onclick="closeModal()">¡Empezar!</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tooltip" id="tooltip"></div>
+
+  <header>
+    <div class="header-titles">
+      <div class="logo">Plan de estudios <span>dinámico</span></div>
+      <div class="subtitle">Ing. en sistemas UTN-FRLP - Plan 2023</div>
+    </div>
+    
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot ld-disabled"></div>Bloqueada</div>
+      <div class="legend-item"><div class="legend-dot ld-available"></div>Disponible</div>
+      <div class="legend-item"><div class="legend-dot ld-cursada"></div>Cursada (clic der.)</div>
+      <div class="legend-item"><div class="legend-dot ld-aprobada"></div>Aprobada (clic izq.)</div>
+    </div>
+    <div class="hint">
+      Clic izq → Aprobada<br>
+      Clic der → Cursada
+    </div>
+  </header>
+
+  <main id="main-content">
+    </main>
+
+  <div class="stats-bar">
+    <div class="stat">
+      <span class="stat-val" id="stat-aprobadas" style="color:var(--aprobada)">0</span>
+      <span class="stat-label">aprobadas</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val" id="stat-cursadas" style="color:var(--cursada)">0</span>
+      <span class="stat-label">cursadas</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val" id="stat-total" style="color:var(--muted)">0</span>
+      <span class="stat-label">total materias</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+    <span id="stat-pct" style="color:var(--muted);font-size:0.75rem">0%</span>
+    
+    <button class="btn-secondary" style="padding: 6px 12px; margin-left: auto; flex: 0 1 auto;" onclick="resetProgress()">🔄 Reiniciar</button>
+  </div>
+
+  <div id="analista-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-box" style="text-align: center;">
+      <h2 style="font-size: 2rem; margin-bottom: 10px;">🎓 ¡Felicidades!</h2>
+      <h3 style="color: var(--aprobada); margin-bottom: 15px;">Ya sos Analista en Sistemas</h3>
+      <p style="color: var(--text); font-size: 0.95rem; line-height: 1.5; margin-bottom: 25px;">
+        Alcanzaste un hito tremendo completando los tres primeros años y el seminario. ¡A festejar! Pero no te relajes demasiado, que falta el último tirón para la ingeniería. ¡A seguir metiéndole!
+      </p>
+      <button class="btn-primary" style="width: 100%;" onclick="document.getElementById('analista-modal').style.display='none'">¡Vamos por más!</button>
+    </div>
+  </div>
+
+  <div id="ingeniero-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-box" style="text-align: center;">
+      <h2 style="font-size: 2rem; margin-bottom: 10px;">🚀 ¡LO LOGRASTE!</h2>
+      <h3 style="color: var(--accent); margin-bottom: 15px;">Ingeniero en Sistemas</h3>
+      <p style="color: var(--text); font-size: 0.95rem; line-height: 1.5; margin-bottom: 20px;">
+        Completaste el 100% del plan de estudios. Todo el esfuerzo dio sus frutos.
+      </p>
+      <div style="background: var(--disabled); border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 25px; text-align: left; font-size: 0.8rem; font-family: 'Space Mono', monospace;">
+        <span style="color: var(--muted)">Nota técnica:</span> Tu progreso está guardado localmente. Si en el futuro querés limpiar estos datos, podés usar el botón de reiniciar o ir en tu navegador a:<br><br>
+        <span style="color: var(--accent)">F12 > Application > Local Storage</span><br><br>
+        y borrar la información de la web.
+      </div>
+      <button class="btn-primary" style="width: 100%;" onclick="document.getElementById('ingeniero-modal').style.display='none'">Cerrar</button>
+    </div>
+  </div>
+  <a href="https://cafecito.app/mateogeffroy" target="_blank" class="cafecito-btn">
+    ☕ Invitame un cafecito
+  </a>
+  <script src="data.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
