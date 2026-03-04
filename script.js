@@ -506,3 +506,24 @@ updateElectivePlaceholders(); // Calculamos progreso inicial
 refreshAll();
 updateStats();
 checkFirstVisit();
+
+// ─── OCULTAR HEADER Y MOSTRAR BOTÓN ARRIBA AL SCROLLEAR ───
+const header = document.querySelector('header');
+const scrollTopBtn = document.getElementById('btn-scroll-top');
+
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 20) {
+    header.classList.add('scrolled');
+    if (scrollTopBtn) scrollTopBtn.classList.add('visible');
+  } else {
+    header.classList.remove('scrolled');
+    if (scrollTopBtn) scrollTopBtn.classList.remove('visible');
+  }
+}, { passive: true });
+
+function scrollToTop() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth' /* Hace que la subida sea patinada y no de golpe */
+  });
+}

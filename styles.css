@@ -552,15 +552,50 @@ button {
   header {
     flex-direction: column;
     align-items: flex-start;
+    padding: 12px 20px;
+    transition: padding 0.3s ease, box-shadow 0.3s ease;
   }
+  
+  /* Preparamos los elementos para que se puedan "aplastar" suavemente */
+  .legend, .hint, .header-actions {
+    width: 100%;
+    overflow: hidden;
+    max-height: 200px; /* Un tope alto arbitrario */
+    opacity: 1;
+    transition: max-height 0.3s ease, opacity 0.2s ease, margin 0.3s ease;
+  }
+  
   .legend {
     gap: 12px;
     justify-content: flex-start;
+    margin-top: 15px;
   }
   .hint {
     text-align: left;
     margin-top: 10px;
   }
+  .header-actions {
+    justify-content: space-between;
+    margin-top: 15px;
+  }
+
+  /* ─── ESTADO SCROLLEADO (Solo en Celular) ─── */
+  header.scrolled {
+    padding:12px 20px 5px 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6); /* Sombrita extra para separar */
+  }
+  
+  header.scrolled .legend,
+  header.scrolled .hint,
+  header.scrolled .header-actions {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    pointer-events: none; /* Para que no se puedan clickear invisibles */
+  }
+
+  /* Resto del layout móvil (tarjetas y stats) */
   .subject-card {
     width: calc(50% - 5px); 
   }
@@ -589,11 +624,6 @@ button {
     padding: 8px 14px;
     font-size: 0.8rem;
   }
-  .header-actions {
-    width: 100%;
-    justify-content: space-between;
-    margin-top: 10px;
-  }
 }
 
 @media (max-width: 480px) {
@@ -602,5 +632,53 @@ button {
   }
   main {
     padding: 20px 15px 150px;
+  }
+}
+
+/* ─── BOTÓN SCROLL TO TOP ─── */
+.scroll-top-btn {
+  position: fixed;
+  bottom: 80px; 
+  right: 28px;
+  background-color: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  z-index: 100;
+  /* Animación para aparecer y desaparecer */
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+}
+
+.scroll-top-btn.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.scroll-top-btn:hover {
+  background-color: var(--border);
+  color: white;
+}
+
+/* Ajuste para celulares (la misma posición que tenía el cafecito) */
+@media (max-width: 768px) {
+  .scroll-top-btn {
+    bottom: 150px; 
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
   }
 }
