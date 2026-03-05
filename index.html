@@ -30,20 +30,14 @@
         </div>
       </div>
       
-      <div class="carousel-slide" id="slide-3" style="display: none;">
-        <h3>💾 Guardado Automático</h3>
-        <p>Tu progreso en la carrera se guarda automáticamente en tu navegador mediante <b>Local Storage</b>, sin necesidad de cuentas ni registros. Más adelante, si lo necesitás, vas a poder eliminar todos estos datos usando el botón de "Reiniciar" ubicado al final de la página.</p>
-      </div>
-      
       <div class="carousel-slide" id="slide-4" style="display: none;">
         <h3>☕ Apoyá el Proyecto</h3>
         <p>Por el momento, la única forma de dar una mano para mantener y mejorar el proyecto es invitándome un cafecito. ¡Toda ayuda suma muchísimo!</p>
         
-        <div style="display: flex; justify-content: center; margin: 25px 0;">
-          <a href="https://cafecito.app/mateogeffroy" target="_blank" class="cafecito-btn" style="position: static; box-shadow: none;">
-            ☕ Invitame un cafecito
-          </a>
-        </div>
+        <a href="https://cafecito.app/mateogeffroy" target="_blank" class="cafecito-btn header-cafecito" style="display: flex; gap: 6px; align-items: center;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>
+        Invitame un cafecito
+      </a>
         
         <div style="font-size: 0.8rem; text-align: center; border-top: 1px solid var(--border); padding-top: 15px;">
           <span style="color: var(--muted);">Ante cualquier error o sugerencia, contactarse a:</span><br>
@@ -56,7 +50,6 @@
           <span class="dot active" id="dot-1"></span>
           <span class="dot" id="dot-2"></span>
           <span class="dot" id="dot-3"></span>
-          <span class="dot" id="dot-4"></span> 
         </div>
         <div class="buttons">
           <button id="btn-prev" class="btn-secondary" style="visibility: hidden;" onclick="changeSlide(-1)">Atrás</button>
@@ -70,9 +63,15 @@
   <div class="tooltip" id="tooltip"></div>
 
   <div id="action-menu" class="action-menu" style="display: none;">
-    <button class="action-btn" id="btn-action-aprobada" onclick="setAction('aprobada')">✅ Aprobada</button>
-    <button class="action-btn" id="btn-action-cursada" onclick="setAction('cursada')">📖 Cursada</button>
-    <button class="action-btn" id="btn-action-desmarcar" onclick="setAction('available')">🔄 Desmarcar</button>
+    <button class="action-btn" id="btn-action-aprobada" onclick="setAction('aprobada')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Aprobada
+    </button>
+    <button class="action-btn" id="btn-action-cursada" onclick="setAction('cursada')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg> Cursada
+    </button>
+    <button class="action-btn" id="btn-action-desmarcar" onclick="setAction('available')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg> Desmarcar
+    </button>
   </div>
 
   <header>
@@ -89,8 +88,9 @@
     </div>
 
     <div class="header-actions">
-      <button id="btn-profile" class="btn-secondary header-cafecito" onclick="logoutSupabase()" style="display: flex; gap: 8px; align-items: center; padding: 6px 12px;" title="Cerrar Sesión">
-        👤 Perfil
+      <button id="btn-profile" class="btn-danger header-cafecito" onclick="logoutSupabase()" style="display: flex; gap: 8px; align-items: center; padding: 6px 12px;" title="Cerrar Sesión">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        Cerrar Sesión
       </button>
 
       <a href="https://cafecito.app/mateogeffroy" target="_blank" class="cafecito-btn header-cafecito">
@@ -121,7 +121,10 @@
     </div>
     <span id="stat-pct" style="color:var(--muted);font-size:0.75rem">0%</span>
     
-    <button class="btn-secondary" style="padding: 6px 12px; margin-left: auto; flex: 0 1 auto;" onclick="resetProgress()">🔄 Reiniciar</button>
+    <button class="btn-secondary" style="display: flex; gap: 6px; align-items: center; padding: 6px 12px; margin-left: auto; flex: 0 1 auto;" onclick="resetProgress()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg> 
+      Reiniciar
+    </button>
   </div>
 
   <div id="analista-modal" class="modal-overlay" style="display: none;">

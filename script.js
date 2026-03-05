@@ -5,6 +5,13 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 const state = {}; 
+// ─── DICCIONARIO DE ICONOS (SVGs) ───
+const ICONS = {
+  aprobada: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`,
+  cursada: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>`,
+  bloqueada: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`,
+  available: ``
+};
 const SAVED_STATE_KEY = 'planSistemasState_v1';
 const HAS_VISITED_KEY = 'planSistemasVisited';
 let currentUser = null;
@@ -142,9 +149,9 @@ function renderCard(subject) {
   div.id = 'card-' + subject.id;
   div.dataset.id = subject.id;
 
-  const icon = state[subject.id] === 'cursada' ? '📖'
-             : state[subject.id] === 'aprobada' ? '✅'
-             : state[subject.id] === 'available' ? '' : '🔒';
+const icon = state[subject.id] === 'cursada' ? ICONS.cursada
+           : state[subject.id] === 'aprobada' ? ICONS.aprobada
+           : state[subject.id] === 'available' ? ICONS.available : ICONS.bloqueada;
 
   div.innerHTML = `
     <div class="subject-num">${subject.num}</div>
@@ -227,14 +234,24 @@ function openActionMenu(id, cardElement) {
   
   hideTooltip(); 
 
-  const rect = cardElement.getBoundingClientRect();
+  // Forzamos la posición 'fixed' para anclarlo a las coordenadas de la pantalla
+  actionMenu.style.position = 'fixed';
   actionMenu.style.display = 'flex';
   
-  let topPos = rect.bottom + 5;
+  const rect = cardElement.getBoundingClientRect();
+  
+  // Anclamos exactamente al límite inferior izquierdo de la tarjeta + 4px de aire
+  let topPos = rect.bottom + 4;
   let leftPos = rect.left;
   
+  // Si se cae por el borde inferior de la pantalla, lo damos vuelta (arriba de la tarjeta)
   if (topPos + actionMenu.offsetHeight > window.innerHeight) {
-    topPos = rect.top - actionMenu.offsetHeight - 5;
+    topPos = rect.top - actionMenu.offsetHeight - 4;
+  }
+  
+  // Si se sale por el lado derecho (raro en este layout, pero por las dudas)
+  if (leftPos + actionMenu.offsetWidth > window.innerWidth) {
+    leftPos = window.innerWidth - actionMenu.offsetWidth - 10;
   }
   
   actionMenu.style.top = topPos + 'px';
@@ -494,7 +511,7 @@ function buildLayout() {
 
 // ─── MODAL LOGIC ──────────────────────────────────────────────────────────────
 let currentSlide = 1;
-const totalSlides = 4; 
+const totalSlides = 3; 
 
 function updateModalUI() {
   for(let i=1; i<=totalSlides; i++) {
