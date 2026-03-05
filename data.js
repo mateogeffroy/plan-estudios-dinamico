@@ -58,8 +58,8 @@ const ELECTIVAS = {
     { id:'E1', num:'E1', name:'Programación Concurrente (1°Cuat.)', hours:'4 hs/sem (2 hs anuales)', annualHours: 2, correlCursada:[14,15], correlAprobada:[] },
     { id:'E2', num:'E2', name:'Sistemas de Tiempo Real (1°Cuat.)',  hours:'6 hs/sem (3 hs anuales)', annualHours: 3, correlCursada:[15], correlAprobada:[7] },
     { id:'E3', num:'E3', name:'Tecnología y Gestión Web (1°Cuat.)', hours:'4 hs/sem (2 hs anuales)', annualHours: 2, correlCursada:[13,15], correlAprobada:[6] },
-    { id:'E4e', num:'E4e', name:'Sistemas de Transmisión y Redes Inalámbricas (2°Cuat.)', hours:'4 hs/sem (2 hs anuales)', annualHours: 2, correlCursada:[9], correlAprobada:[7] },
-    { id:'E5e', num:'E5e', name:'Responsabilidad Social e Institucional (1° y 2°Cuat.)', hours:'4 hs/sem (2 hs anuales)', annualHours: 2, correlCursada:[8,16], correlAprobada:[] },
+    { id:'E4e', num:'E4', name:'Sistemas de Transmisión y Redes Inalámbricas (2°Cuat.)', hours:'4 hs/sem (2 hs anuales)', annualHours: 2, correlCursada:[9], correlAprobada:[7] },
+    { id:'E5e', num:'E5', name:'Responsabilidad Social e Institucional (1° y 2°Cuat.)', hours:'4 hs/sem (2 hs anuales)', annualHours: 2, correlCursada:[8,16], correlAprobada:[] },
     { id:'E6', num:'E6', name:'Comunicación Profesional',           hours:'6 hs/sem (3 hs anuales)', annualHours: 3, correlCursada:[11], correlAprobada:[8] },
   ],
   4: [
