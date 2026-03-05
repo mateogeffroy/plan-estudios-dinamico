@@ -16,12 +16,26 @@ SUBJECTS.filter(s => s.level === 1).forEach(s => state[s.id] = 'available');
 async function initSession() {
   const { data: { session } } = await supabase.auth.getSession();
   
-  if (session) {
+  // Usamos includes('login') para que funcione perfecto en Vercel con las URLs limpias
+  const isLoginPage = window.location.pathname.includes('login');
+
+  if (!session) {
+    // Si NO está logueado y NO está en la página de login, lo pateamos al login
+    if (!isLoginPage) {
+      window.location.replace('/login.html');
+      return;
+    }
+    // Si está en el login y no está logueado, se queda ahí viendo el botón
+  } else {
+    // Si SÍ está logueado y está en la página de login, lo mandamos a la app
+    if (isLoginPage) {
+      window.location.replace('/');
+      return;
+    }
+
+    // --- LÓGICA DE LA APP PRINCIPAL ---
     currentUser = session.user;
-    document.getElementById('btn-login').style.display = 'none';
-    document.getElementById('btn-logout').style.display = 'flex';
     
-    // Traemos el progreso de la nube
     const { data, error } = await supabase
       .from('progreso_usuarios')
       .select('estado_materias')
@@ -31,30 +45,18 @@ async function initSession() {
     if (data && data.estado_materias) {
       Object.assign(state, data.estado_materias);
     } else if (error && error.code === 'PGRST116') {
-      // Si no existe, le creamos su primera fila
       await supabase.from('progreso_usuarios').insert({
         id_usuario: currentUser.id,
         estado_materias: state
       });
     }
-  } else {
-    // Modo Invitado (Local Storage)
-    currentUser = null;
-    document.getElementById('btn-login').style.display = 'flex';
-    document.getElementById('btn-logout').style.display = 'none';
-    
-    const savedData = localStorage.getItem(SAVED_STATE_KEY);
-    if (savedData) {
-      try { Object.assign(state, JSON.parse(savedData)); } 
-      catch (e) { console.error("Error leyendo local storage", e); }
-    }
-  }
 
-  // Refrescamos toda la UI después de cargar
-  updateAllAvailability();
-  updateElectivePlaceholders();
-  refreshAll();
-  updateStats();
+    // Refrescamos la UI
+    updateAllAvailability();
+    updateElectivePlaceholders();
+    refreshAll();
+    updateStats();
+  }
 }
 
 async function loginGoogle() {
