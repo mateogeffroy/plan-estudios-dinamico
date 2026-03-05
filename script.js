@@ -175,15 +175,39 @@ const icon = state[subject.id] === 'cursada' ? ICONS.cursada
 
   if (!subject.isElectivePlaceholder) {
     div.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      if (window.matchMedia("(pointer: coarse)").matches) {
-        openActionMenu(subject.id, div);
-      } else {
-        handleClick(subject.id, 'aprobada');
-      }
+    e.stopPropagation(); 
+
+    // Guardamos si ESTA tarjeta específica ya estaba roja antes de limpiar todo
+    const wasAlreadyHighlighted = div.classList.contains('highlight-blocked');
+
+    // Limpiamos cualquier resaltado rojo en toda la página
+    document.querySelectorAll('.subject-card.highlight-blocked').forEach(c => {
+      c.classList.remove('highlight-blocked');
     });
+
+    if (window.matchMedia("(pointer: coarse)").matches) {
+      // --- LÓGICA PARA CELULARES ---
+      const isBlocked = state[subject.id] !== 'available' && state[subject.id] !== 'cursada' && state[subject.id] !== 'aprobada';
+
+      if (isBlocked) {
+        if (wasAlreadyHighlighted) {
+          // Si ya estaba en rojo y la volvimos a tocar, solo apagamos el cartel (Efecto Toggle)
+          hideTooltip();
+        } else {
+          // Si era una nueva, la prendemos y mostramos el cartel
+          div.classList.add('highlight-blocked');
+          showTooltip(e, subject);
+          document.getElementById('action-menu').style.display = 'none'; 
+        }
+      } else {
+        hideTooltip();
+        openActionMenu(subject.id, div);
+      }
+    } else {
+      // --- LÓGICA PARA PC ---
+      handleClick(subject.id, 'aprobada');
+    }
+  });
     
     div.addEventListener('contextmenu', (e) => {
       e.preventDefault();
@@ -197,8 +221,19 @@ const icon = state[subject.id] === 'cursada' ? ICONS.cursada
     });
   }
 
-  div.addEventListener('mousemove', (e) => showTooltip(e, subject));
-  div.addEventListener('mouseleave', () => hideTooltip());
+  div.addEventListener('mousemove', (e) => {
+    // Si NO es una pantalla táctil (celular), permitimos que el cartel siga al mouse
+    if (!window.matchMedia("(pointer: coarse)").matches) {
+      showTooltip(e, subject);
+    }
+  });
+
+  div.addEventListener('mouseleave', () => {
+    // Si NO es una pantalla táctil, permitimos que el cartel se esconda al sacar el mouse
+    if (!window.matchMedia("(pointer: coarse)").matches) {
+      hideTooltip();
+    }
+  });
 
   return div;
 }
@@ -316,6 +351,12 @@ function closeActionMenu() {
 document.addEventListener('click', (e) => {
   if (actionMenu && !actionMenu.contains(e.target) && !e.target.closest('.subject-card')) {
     closeActionMenu();
+    hideTooltip(); // Escondemos el cuadrito negro de correlatividades
+    
+    // Apagamos el resaltado rojo de la materia bloqueada
+    document.querySelectorAll('.subject-card.highlight-blocked').forEach(c => {
+      c.classList.remove('highlight-blocked');
+    });
   }
 });
 
@@ -420,27 +461,57 @@ function showTooltip(e, subject) {
     lines.push(`🎯 Requiere: ${subject.targetHours} hs anuales`);
     lines.push(`Aprobando electivas de ${subject.level}° nivel.`);
   } else {
-    if (subject.correlCursada.length) {
-      lines.push('📖 Necesita cursadas:');
+    // Variable para controlar si ya pusimos el título principal
+    let hasTitle = false;
+
+    // --- CURSADAS ---
+    if (subject.correlCursada?.length) {
+      if (!hasTitle) {
+        // Título principal con el color de acento
+        lines.push('<span style="font-size: 0.8rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em;">Correlativas</span>');
+        hasTitle = true;
+      }
+      lines.push('<b>Cursada(s):</b>');
+      
       subject.correlCursada.forEach(cid => {
         const s = getSubjectById(cid);
+        // Limpiamos los paréntesis usando Regex (ej: "Legislación (2° Cuat.)" -> "Legislación")
+        const cleanName = s ? s.name.replace(/\s*\(.*?\)/g, '') : cid;
         const ok = state[cid] === 'cursada' || state[cid] === 'aprobada';
-        lines.push(`  ${ok?'✓':'✗'} ${s ? s.name : cid}`);
+        
+        lines.push(`${ok ? '✅' : '❌'} ${cleanName}`);
       });
     }
-    if (subject.correlAprobada.length) {
-      lines.push('✅ Necesita aprobadas:');
+    
+    // --- APROBADAS ---
+    if (subject.correlAprobada?.length) {
+      if (!hasTitle) {
+        lines.push('<span style="font-size: 0.8rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em;">Correlativas</span>');
+        hasTitle = true;
+      }
+      lines.push('<b>Aprobada(s):</b>');
+      
       subject.correlAprobada.forEach(cid => {
         const s = getSubjectById(cid);
+        // Limpiamos los paréntesis
+        const cleanName = s ? s.name.replace(/\s*\(.*?\)/g, '') : cid;
         const ok = state[cid] === 'aprobada';
-        lines.push(`  ${ok?'✓':'✗'} ${s ? s.name : cid}`);
+        
+        lines.push(`${ok ? '✅' : '❌'} ${cleanName}`);
       });
     }
-    if (!lines.length && !subject.isElectivePlaceholder) lines.push('Sin correlatividades');
+    
+    if (!lines.length && !subject.isElectivePlaceholder) {
+      lines.push('Sin correlatividades');
+    }
   }
 
   tooltip.innerHTML = lines.join('<br>');
   tooltip.classList.add('show');
+  
+  // Pequeño truco extra: Alineamos el texto a la izquierda para que los emojis queden encolumnados
+  tooltip.style.textAlign = 'left';
+  
   moveTooltip(e);
 }
 
@@ -448,14 +519,25 @@ function moveTooltip(e) {
   let leftPos = e.clientX + 12;
   let topPos = e.clientY + 12;
 
-  // Si el tooltip se va a salir por la derecha de la pantalla, lo tiramos para la izquierda del dedo
+  // 1. Si se va a salir por la derecha, lo tiramos a la izquierda del dedo
   if (leftPos + tooltip.offsetWidth > window.innerWidth) {
     leftPos = e.clientX - tooltip.offsetWidth - 12;
   }
 
-  // Si se va a salir por abajo de la pantalla, lo tiramos para arriba
+  // 2. ¡EL ARREGLO! Si después de ese cálculo queda en negativo (se sale por la izquierda), 
+  // lo anclamos rígidamente al borde izquierdo de la pantalla con un margen de 12px.
+  if (leftPos < 12) {
+    leftPos = 12;
+  }
+
+  // 3. Si se va a salir por abajo de la pantalla, lo tiramos para arriba
   if (topPos + tooltip.offsetHeight > window.innerHeight) {
     topPos = e.clientY - tooltip.offsetHeight - 12;
+  }
+
+  // 4. Por las dudas, si se sale por arriba (muy raro, pero sumamos el tope)
+  if (topPos < 12) {
+    topPos = 12;
   }
 
   tooltip.style.left = leftPos + 'px';

@@ -825,3 +825,16 @@ button {
     padding-bottom: 240px !important; 
   }
 }
+
+/* ─── RESALTADO DE MATERIA BLOQUEADA (UX) ─── */
+.subject-card.highlight-blocked {
+  /* Forzamos el borde rojo suave sobre el borde disabled */
+  border-color: #ef4444 !important;
+  /* Glow rojo leve */
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.4) !important;
+  /* Un pequeñísimo efecto de 'pop' hacia arriba */
+  transform: translateY(-2px);
+  /* Aseguramos que se vea por encima de las otras tarjetas */
+  z-index: 50; 
+  transition: all 0.2s ease;
+}
