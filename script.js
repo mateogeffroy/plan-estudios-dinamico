@@ -49,10 +49,14 @@ async function initSession() {
     if (data && data.estado_materias) {
       Object.assign(state, data.estado_materias);
     } else if (error && error.code === 'PGRST116') {
+      // 1. Le creamos su primera fila en la base de datos
       await supabaseClient.from('progreso_usuarios').insert({
         id_usuario: currentUser.id,
         estado_materias: state
       });
+      
+      // 2. ¡Lanzamos el modal de bienvenida porque es 100% nuevo!
+      openWelcomeModal();
     }
 
     // Solo actualizamos la UI si estamos en el index
