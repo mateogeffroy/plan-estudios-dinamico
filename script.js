@@ -1,25 +1,84 @@
-// State
-const state = {}; 
+// ─── INIT SUPABASE Y ESTADO ───
+const supabaseUrl = 'https://dicrulugptkxedhhfysq.supabase.co';
+// ¡ATENCIÓN! REEMPLAZÁ ESTO POR TU CLAVE REAL DE SUPABASE
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpY3J1bHVncHRreGVkaGhmeXNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NjkzMDAsImV4cCI6MjA4ODI0NTMwMH0.ZHp7Ab_9vOBAUuMyPpPTf7CxDtpudbUGFwYD_iaG0qQ';
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-// ─── LOCAL STORAGE INIT ────────────────────────────────────────────────────────
+const state = {}; 
 const SAVED_STATE_KEY = 'planSistemasState_v1';
 const HAS_VISITED_KEY = 'planSistemasVisited';
+let currentUser = null;
 
+// Inicializamos todo bloqueado por defecto
 ALL.forEach(s => state[s.id] = 'disabled');
 SUBJECTS.filter(s => s.level === 1).forEach(s => state[s.id] = 'available');
 
-const savedData = localStorage.getItem(SAVED_STATE_KEY);
-if (savedData) {
-  try {
-    const parsed = JSON.parse(savedData);
-    Object.assign(state, parsed);
-  } catch (e) {
-    console.error("Error leyendo local storage", e);
+async function initSession() {
+  const { data: { session } } = await supabase.auth.getSession();
+  
+  if (session) {
+    currentUser = session.user;
+    document.getElementById('btn-login').style.display = 'none';
+    document.getElementById('btn-logout').style.display = 'flex';
+    
+    // Traemos el progreso de la nube
+    const { data, error } = await supabase
+      .from('progreso_usuarios')
+      .select('estado_materias')
+      .eq('id_usuario', currentUser.id)
+      .single();
+
+    if (data && data.estado_materias) {
+      Object.assign(state, data.estado_materias);
+    } else if (error && error.code === 'PGRST116') {
+      // Si no existe, le creamos su primera fila
+      await supabase.from('progreso_usuarios').insert({
+        id_usuario: currentUser.id,
+        estado_materias: state
+      });
+    }
+  } else {
+    // Modo Invitado (Local Storage)
+    currentUser = null;
+    document.getElementById('btn-login').style.display = 'flex';
+    document.getElementById('btn-logout').style.display = 'none';
+    
+    const savedData = localStorage.getItem(SAVED_STATE_KEY);
+    if (savedData) {
+      try { Object.assign(state, JSON.parse(savedData)); } 
+      catch (e) { console.error("Error leyendo local storage", e); }
+    }
   }
+
+  // Refrescamos toda la UI después de cargar
+  updateAllAvailability();
+  updateElectivePlaceholders();
+  refreshAll();
+  updateStats();
 }
 
-function saveProgress() {
+async function loginGoogle() {
+  await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: window.location.origin 
+    }
+  });
+}
+
+async function logoutSupabase() {
+  await supabase.auth.signOut();
+  location.reload();
+}
+
+async function saveProgress() {
   localStorage.setItem(SAVED_STATE_KEY, JSON.stringify(state));
+
+  if (currentUser) {
+    await supabase.from('progreso_usuarios').update({
+      estado_materias: state
+    }).eq('id_usuario', currentUser.id);
+  }
 }
 
 // ─── RENDER ────────────────────────────────────────────────────────────────────
@@ -39,7 +98,7 @@ function checkAvailability(subject) {
 
 function updateAllAvailability() {
   ALL.forEach(s => {
-    if (s.isElectivePlaceholder) return; // Las electivas se calculan aparte
+    if (s.isElectivePlaceholder) return; 
 
     if (state[s.id] === 'disabled') {
       if (checkAvailability(s)) state[s.id] = 'available';
@@ -96,30 +155,24 @@ function renderCard(subject) {
   `;
 
   if (!subject.isElectivePlaceholder) {
-    // Evento Click Izquierdo / Toque Simple
     div.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
       
-      // Si el puntero es "grueso" (pantalla táctil), abrimos el menú
       if (window.matchMedia("(pointer: coarse)").matches) {
         openActionMenu(subject.id, div);
       } else {
-        // Si es mouse, lo tomamos como click izquierdo normal
         handleClick(subject.id, 'aprobada');
       }
     });
     
-    // Evento Click Derecho / Toque Mantenido
     div.addEventListener('contextmenu', (e) => {
       e.preventDefault();
       e.stopPropagation();
       
       if (window.matchMedia("(pointer: coarse)").matches) {
-        // Si mantiene presionado el dedo en el celu, también abrimos el menú para atajar el evento nativo
         openActionMenu(subject.id, div);
       } else {
-        // Si es mouse, lo tomamos como click derecho normal
         handleClick(subject.id, 'cursada');
       }
     });
@@ -137,23 +190,19 @@ function handleClick(id, action) {
 
   const subject = getSubjectById(id);
 
-  // Lógica especial para el Seminario
   if (subject && subject.isSeminario) {
-    // Si ya estaba en verde (aprobada automáticamente), no dejamos que la desmarque con un simple clic.
     if (cur === 'aprobada') return; 
     
-    // Solo alterna entre 'cursada' (amarillo) y 'available' (gris)
     if (cur === 'cursada') state[id] = 'available';
     else state[id] = 'cursada';
   } else {
-    // Lógica normal para el resto
     if (cur === action) state[id] = 'available';
     else state[id] = action;
   }
 
   updateAllAvailability();
   updateElectivePlaceholders(); 
-  checkMilestones(); // <-- NUEVO: Revisamos si se recibe de algo
+  checkMilestones(); 
   refreshAll();
   updateStats();
   saveProgress(); 
@@ -177,17 +226,14 @@ function openActionMenu(id, cardElement) {
   currentSelectedId = id;
   const subject = getSubjectById(id);
   
-  hideTooltip(); // Ocultamos el tooltip para que no moleste en el celu
+  hideTooltip(); 
 
-  // Calculamos dónde está la tarjeta en la pantalla
   const rect = cardElement.getBoundingClientRect();
   actionMenu.style.display = 'flex';
   
-  // Posicionamos el menú justo abajo de la tarjeta
   let topPos = rect.bottom + 5;
   let leftPos = rect.left;
   
-  // Si el menú se va a salir por abajo de la pantalla, lo dibujamos arriba de la tarjeta
   if (topPos + actionMenu.offsetHeight > window.innerHeight) {
     topPos = rect.top - actionMenu.offsetHeight - 5;
   }
@@ -195,7 +241,6 @@ function openActionMenu(id, cardElement) {
   actionMenu.style.top = topPos + 'px';
   actionMenu.style.left = leftPos + 'px';
 
-  // Ocultamos el botón "Aprobada" si es el Seminario, ya que se aprueba solo
   const btnAprobada = document.getElementById('btn-action-aprobada');
   if (subject.isSeminario) {
     btnAprobada.style.display = 'none'; 
@@ -209,7 +254,6 @@ function setAction(action) {
     const id = currentSelectedId;
     const subject = getSubjectById(id);
     
-    // Forzamos el estado que el usuario eligió en el menú
     if (subject.isSeminario) {
       if (action === 'cursada') state[id] = 'cursada';
       else if (action === 'available') state[id] = 'available';
@@ -217,7 +261,6 @@ function setAction(action) {
       state[id] = action;
     }
 
-    // Actualizamos toda la app
     updateAllAvailability();
     updateElectivePlaceholders(); 
     checkMilestones();
@@ -225,7 +268,6 @@ function setAction(action) {
     updateStats();
     saveProgress(); 
 
-    // Animación visual
     const card = document.getElementById('card-' + id);
     if (card) {
       card.classList.remove('popping');
@@ -242,7 +284,6 @@ function closeActionMenu() {
   currentSelectedId = null;
 }
 
-// Cerrar el menú si el usuario toca en cualquier otra parte de la pantalla o scrollea
 document.addEventListener('click', (e) => {
   if (actionMenu && !actionMenu.contains(e.target) && !e.target.closest('.subject-card')) {
     closeActionMenu();
@@ -255,7 +296,6 @@ document.addEventListener('scroll', () => {
 }, { passive: true });
 
 function checkMilestones() {
-  // 1. Analista en Sistemas (Obligatorias 1 al 3 + Electivas de 3ro)
   const lvl123 = ALL.filter(s => typeof s.id === 'number' && s.level <= 3);
   const analistaReady = lvl123.every(s => state[s.id] === 'aprobada') && state['REQ3'] === 'aprobada';
   
@@ -269,7 +309,6 @@ function checkMilestones() {
     state['SEM'] = 'cursada';
   }
 
-  // 2. Ingeniero (36 Obligatorias + SEM + PPS + Completar horas de REQ3, REQ4 y REQ5)
   const requiredForIngeniero = ALL.filter(s => 
     typeof s.id === 'number' || 
     s.id === 'SEM' || 
@@ -285,11 +324,20 @@ function checkMilestones() {
   }
 }
 
-function resetProgress() {
+async function resetProgress() {
   if (confirm("¿Estás seguro de que querés borrar todo tu progreso? Esta acción no se puede deshacer.")) {
     localStorage.removeItem(SAVED_STATE_KEY);
     localStorage.removeItem('hasSeenAnalistaModal');
     localStorage.removeItem('hasSeenIngenieroModal');
+    
+    // Si está logueado, limpiamos también la nube
+    if (currentUser) {
+       const blankState = {};
+       ALL.forEach(s => blankState[s.id] = 'disabled');
+       SUBJECTS.filter(s => s.level === 1).forEach(s => blankState[s.id] = 'available');
+       await supabase.from('progreso_usuarios').update({ estado_materias: blankState }).eq('id_usuario', currentUser.id);
+    }
+    
     location.reload();
   }
 }
@@ -305,7 +353,6 @@ function refreshAll() {
                : state[s.id] === 'available' ? '' : '🔒';
     card.querySelector('.subject-status-icon').textContent = icon;
 
-    // Actualizamos el texto visual de progreso en las tarjetas Placeholder
     if (s.isElectivePlaceholder) {
       let cursadaHours = 0;
       let aprobadaHours = 0;
@@ -376,19 +423,15 @@ document.addEventListener('mousemove', (e) => {
 
 // ─── STATS ────────────────────────────────────────────────────────────────────
 function updateStats() {
-  // Obligatorias (1-36), Seminario y PPS
   const coreSubjects = ALL.filter(s => typeof s.id === 'number' || s.id === 'SEM' || s.id === 'PPS');
-  // Electivas reales (las que tienen horas anuales asignadas)
   const realElectives = ALL.filter(s => s.annualHours !== undefined);
 
-  // Aprobadas y cursadas: suman core + electivas clickeadas
   const ap = coreSubjects.filter(s => state[s.id] === 'aprobada').length +
              realElectives.filter(s => state[s.id] === 'aprobada').length;
 
   const cu = coreSubjects.filter(s => state[s.id] === 'cursada').length +
              realElectives.filter(s => state[s.id] === 'cursada').length;
 
-  // Total dinámico: 38 materias base + la cantidad de electivas que hayas tocado
   const electivasTomadas = realElectives.filter(s => state[s.id] === 'cursada' || state[s.id] === 'aprobada').length;
   const total = coreSubjects.length + electivasTomadas;
 
@@ -440,7 +483,6 @@ function buildLayout() {
         electivasGrid.appendChild(renderCard(s));
       });
       
-      // Añadimos PPS si es 5to año (la única que mantuve como isElective: true regular)
       SUBJECTS.filter(s => s.level === lvl && s.isElective).forEach(s => {
           electivasGrid.appendChild(renderCard(s));
       });
@@ -453,7 +495,7 @@ function buildLayout() {
 
 // ─── MODAL LOGIC ──────────────────────────────────────────────────────────────
 let currentSlide = 1;
-const totalSlides = 4; // ¡Actualizado a 4 slides!
+const totalSlides = 4; 
 
 function updateModalUI() {
   for(let i=1; i<=totalSlides; i++) {
@@ -492,20 +534,11 @@ function checkFirstVisit() {
   }
 }
 
-// NUEVA FUNCIÓN: Abrir el modal manualmente desde el botón "?"
 function openWelcomeModal() {
-  currentSlide = 1; // Resetea el modal al primer slide
+  currentSlide = 1; 
   document.getElementById('welcome-modal').style.display = 'flex';
   updateModalUI();
 }
-
-// ─── INIT ─────────────────────────────────────────────────────────────────────
-buildLayout();
-updateAllAvailability(); 
-updateElectivePlaceholders(); // Calculamos progreso inicial
-refreshAll();
-updateStats();
-checkFirstVisit();
 
 // ─── OCULTAR HEADER Y MOSTRAR BOTÓN ARRIBA AL SCROLLEAR ───
 const header = document.querySelector('header');
@@ -524,6 +557,12 @@ window.addEventListener('scroll', () => {
 function scrollToTop() {
   window.scrollTo({
     top: 0,
-    behavior: 'smooth' /* Hace que la subida sea patinada y no de golpe */
+    behavior: 'smooth' 
   });
 }
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+buildLayout();
+checkFirstVisit();
+// InitSession se encarga ahora de actualizar la disponibilidad y pintar todo luego de consultar la BD.
+initSession();
