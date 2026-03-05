@@ -1,5 +1,6 @@
 // ─── INIT SUPABASE Y ESTADO ───
 const supabaseUrl = 'https://dicrulugptkxedhhfysq.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpY3J1bHVncHRreGVkaGhmeXNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NjkzMDAsImV4cCI6MjA4ODI0NTMwMH0.ZHp7Ab_9vOBAUuMyPpPTf7CxDtpudbUGFwYD_iaG0qQ';
 // ¡CORRECCIÓN! Usamos "supabaseClient" para no chocar con el global de Supabase
 const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
