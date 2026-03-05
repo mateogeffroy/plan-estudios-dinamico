@@ -1,8 +1,7 @@
 // ─── INIT SUPABASE Y ESTADO ───
 const supabaseUrl = 'https://dicrulugptkxedhhfysq.supabase.co';
-// ¡ATENCIÓN! REEMPLAZÁ ESTO POR TU CLAVE REAL DE SUPABASE
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpY3J1bHVncHRreGVkaGhmeXNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NjkzMDAsImV4cCI6MjA4ODI0NTMwMH0.ZHp7Ab_9vOBAUuMyPpPTf7CxDtpudbUGFwYD_iaG0qQ';
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+// ¡CORRECCIÓN! Usamos "supabaseClient" para no chocar con el global de Supabase
+const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 const state = {}; 
 const SAVED_STATE_KEY = 'planSistemasState_v1';
@@ -14,29 +13,26 @@ ALL.forEach(s => state[s.id] = 'disabled');
 SUBJECTS.filter(s => s.level === 1).forEach(s => state[s.id] = 'available');
 
 async function initSession() {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await supabaseClient.auth.getSession();
   
-  // Usamos includes('login') para que funcione perfecto en Vercel con las URLs limpias
   const isLoginPage = window.location.pathname.includes('login');
 
   if (!session) {
-    // Si NO está logueado y NO está en la página de login, lo pateamos al login
     if (!isLoginPage) {
       window.location.replace('/login.html');
-      return;
+      return; 
     }
-    // Si está en el login y no está logueado, se queda ahí viendo el botón
   } else {
-    // Si SÍ está logueado y está en la página de login, lo mandamos a la app
     if (isLoginPage) {
       window.location.replace('/');
       return;
     }
 
-    // --- LÓGICA DE LA APP PRINCIPAL ---
+    // --- SI LLEGA ACÁ, ES PORQUE ESTÁ LOGUEADO Y EN EL INDEX ---
     currentUser = session.user;
     
-    const { data, error } = await supabase
+    // Traemos el progreso de la nube
+    const { data, error } = await supabaseClient
       .from('progreso_usuarios')
       .select('estado_materias')
       .eq('id_usuario', currentUser.id)
@@ -45,13 +41,13 @@ async function initSession() {
     if (data && data.estado_materias) {
       Object.assign(state, data.estado_materias);
     } else if (error && error.code === 'PGRST116') {
-      await supabase.from('progreso_usuarios').insert({
+      await supabaseClient.from('progreso_usuarios').insert({
         id_usuario: currentUser.id,
         estado_materias: state
       });
     }
 
-    // Refrescamos la UI
+    // Solo actualizamos la UI si estamos en el index
     updateAllAvailability();
     updateElectivePlaceholders();
     refreshAll();
@@ -60,7 +56,7 @@ async function initSession() {
 }
 
 async function loginGoogle() {
-  await supabase.auth.signInWithOAuth({
+  await supabaseClient.auth.signInWithOAuth({
     provider: 'google',
     options: {
       redirectTo: window.location.origin 
@@ -69,7 +65,7 @@ async function loginGoogle() {
 }
 
 async function logoutSupabase() {
-  await supabase.auth.signOut();
+  await supabaseClient.auth.signOut();
   location.reload();
 }
 
@@ -77,7 +73,7 @@ async function saveProgress() {
   localStorage.setItem(SAVED_STATE_KEY, JSON.stringify(state));
 
   if (currentUser) {
-    await supabase.from('progreso_usuarios').update({
+    await supabaseClient.from('progreso_usuarios').update({
       estado_materias: state
     }).eq('id_usuario', currentUser.id);
   }
@@ -332,12 +328,12 @@ async function resetProgress() {
     localStorage.removeItem('hasSeenAnalistaModal');
     localStorage.removeItem('hasSeenIngenieroModal');
     
-    // Si está logueado, limpiamos también la nube
+    // Usamos supabaseClient
     if (currentUser) {
        const blankState = {};
        ALL.forEach(s => blankState[s.id] = 'disabled');
        SUBJECTS.filter(s => s.level === 1).forEach(s => blankState[s.id] = 'available');
-       await supabase.from('progreso_usuarios').update({ estado_materias: blankState }).eq('id_usuario', currentUser.id);
+       await supabaseClient.from('progreso_usuarios').update({ estado_materias: blankState }).eq('id_usuario', currentUser.id);
     }
     
     location.reload();
@@ -501,21 +497,30 @@ const totalSlides = 4;
 
 function updateModalUI() {
   for(let i=1; i<=totalSlides; i++) {
-    document.getElementById(`slide-${i}`).style.display = 'none';
-    document.getElementById(`dot-${i}`).classList.remove('active');
+    const slide = document.getElementById(`slide-${i}`);
+    if(slide) slide.style.display = 'none';
+    const dot = document.getElementById(`dot-${i}`);
+    if(dot) dot.classList.remove('active');
   }
   
-  document.getElementById(`slide-${currentSlide}`).style.display = 'block';
-  document.getElementById(`dot-${currentSlide}`).classList.add('active');
+  const currentSlideEl = document.getElementById(`slide-${currentSlide}`);
+  if(currentSlideEl) currentSlideEl.style.display = 'block';
+  
+  const currentDotEl = document.getElementById(`dot-${currentSlide}`);
+  if(currentDotEl) currentDotEl.classList.add('active');
 
-  document.getElementById('btn-prev').style.visibility = currentSlide === 1 ? 'hidden' : 'visible';
+  const btnPrev = document.getElementById('btn-prev');
+  if(btnPrev) btnPrev.style.visibility = currentSlide === 1 ? 'hidden' : 'visible';
+  
+  const btnNext = document.getElementById('btn-next');
+  const btnClose = document.getElementById('btn-close');
   
   if (currentSlide === totalSlides) {
-    document.getElementById('btn-next').style.display = 'none';
-    document.getElementById('btn-close').style.display = 'block';
+    if(btnNext) btnNext.style.display = 'none';
+    if(btnClose) btnClose.style.display = 'block';
   } else {
-    document.getElementById('btn-next').style.display = 'block';
-    document.getElementById('btn-close').style.display = 'none';
+    if(btnNext) btnNext.style.display = 'block';
+    if(btnClose) btnClose.style.display = 'none';
   }
 }
 
@@ -531,15 +536,21 @@ function closeModal() {
 
 function checkFirstVisit() {
   if (!localStorage.getItem(HAS_VISITED_KEY)) {
-    document.getElementById('welcome-modal').style.display = 'flex';
-    updateModalUI();
+    const modal = document.getElementById('welcome-modal');
+    if(modal) {
+      modal.style.display = 'flex';
+      updateModalUI();
+    }
   }
 }
 
 function openWelcomeModal() {
   currentSlide = 1; 
-  document.getElementById('welcome-modal').style.display = 'flex';
-  updateModalUI();
+  const modal = document.getElementById('welcome-modal');
+  if(modal) {
+    modal.style.display = 'flex';
+    updateModalUI();
+  }
 }
 
 // ─── OCULTAR HEADER Y MOSTRAR BOTÓN ARRIBA AL SCROLLEAR ───
@@ -548,10 +559,10 @@ const scrollTopBtn = document.getElementById('btn-scroll-top');
 
 window.addEventListener('scroll', () => {
   if (window.scrollY > 20) {
-    header.classList.add('scrolled');
+    if(header) header.classList.add('scrolled');
     if (scrollTopBtn) scrollTopBtn.classList.add('visible');
   } else {
-    header.classList.remove('scrolled');
+    if(header) header.classList.remove('scrolled');
     if (scrollTopBtn) scrollTopBtn.classList.remove('visible');
   }
 }, { passive: true });
