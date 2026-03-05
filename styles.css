@@ -84,6 +84,7 @@ header {
 .header-actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 12px;
 }
 
@@ -473,6 +474,9 @@ button {
   cursor: pointer;
   transition: all 0.2s;
   border: none;
+}
+
+.buttons button {
   flex: 1;
 }
 
@@ -666,10 +670,22 @@ button {
   .hint,
   .header-actions {
     width: 100%;
-    overflow: hidden;
-    max-height: 200px;
-    opacity: 1;
-    transition: max-height 0.3s ease, opacity 0.2s ease, margin 0.3s ease;
+    justify-content: space-between;
+    margin-top: 15px;
+    flex-wrap: nowrap; /* ¡Obliga a que estén sí o sí en la misma línea! */
+    gap: 8px;
+  }
+
+  /* Forzamos a que los dos botones grandes se repartan el espacio 50/50 */
+  .header-actions .btn-danger,
+  .header-actions .cafecito-btn {
+    flex: 1;
+    justify-content: center;
+    padding: 8px 10px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    position: static !important; /* Anula cualquier flotado rebelde */
+    transform: none !important;
   }
 
   .legend {
@@ -704,35 +720,53 @@ button {
   }
 
   .subject-grid {
+    display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    gap: 8px;
   }
 
   .subject-card {
+    width: 100%;
     padding: 10px 8px;
     min-height: 120px;
+    display: flex;
+    flex-direction: column;
   }
 
   .subject-name {
     font-size: 0.8rem;
     line-height: 1.2;
+    margin: 4px 0;
+    flex-grow: 1;
+  }
+
+  .stats-bar {
+    flex-wrap: wrap;
+    padding: 12px 15px 24px 15px;
+    gap: 8px;
+  }
+
+  .stat {
+    flex: 1 1 30%;
+    justify-content: center;
   }
 
   .stats-bar .progress-bar {
     width: 100%;
     flex: none;
     order: 4;
-    margin-top: 5px;
+    margin: 6px 0 10px 0;
   }
 
   #stat-pct {
     order: 5;
+    flex: 1;
   }
 
   .stats-bar button {
     order: 6;
-    margin-left: 0 !important;
-    width: 100%;
+    width: auto;
+    margin-left: auto;
   }
 
   .cafecito-btn {
@@ -748,15 +782,5 @@ button {
     width: 40px;
     height: 40px;
     font-size: 1.2rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .subject-card {
-    width: 100%;
-  }
-
-  main {
-    padding: 20px 15px 150px;
   }
 }

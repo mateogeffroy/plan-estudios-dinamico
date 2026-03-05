@@ -88,14 +88,16 @@
     </div>
 
     <div class="header-actions">
-      <button id="btn-profile" class="btn-danger header-cafecito" onclick="logoutSupabase()" style="display: flex; gap: 8px; align-items: center; padding: 6px 12px;" title="Cerrar Sesión">
+      <button id="btn-profile" class="btn-danger header-cafecito" onclick="logoutSupabase()" style="display: flex; gap: 8px; align-items: center;" title="Cerrar Sesión">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
         Cerrar Sesión
       </button>
 
-      <a href="https://cafecito.app/mateogeffroy" target="_blank" class="cafecito-btn header-cafecito">
-        ☕ Invitame un cafecito
+      <a href="https://cafecito.app/mateogeffroy" target="_blank" class="cafecito-btn header-cafecito" style="display: flex; gap: 6px; align-items: center;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>
+        Cafecito
       </a>
+
       <button class="help-btn" onclick="openWelcomeModal()" title="Ayuda y tutorial">?</button>
     </div>
   </header>
