@@ -120,26 +120,35 @@ function updateAllAvailability() {
 }
 
 function updateElectivePlaceholders() {
+  let globalCursadaHours = 0;
+  let globalAprobadaHours = 0;
+
+  // Sumamos TODAS las electivas tocadas en la carrera
   [3, 4, 5].forEach(lvl => {
     const electivesOfLevel = ELECTIVAS[lvl];
     if (!electivesOfLevel) return;
 
-    let cursadaHours = 0;
-    let aprobadaHours = 0;
-
     electivesOfLevel.forEach(el => {
-       if (state[el.id] === 'aprobada') aprobadaHours += el.annualHours;
-       else if (state[el.id] === 'cursada') cursadaHours += el.annualHours;
+       if (state[el.id] === 'aprobada') globalAprobadaHours += el.annualHours;
+       else if (state[el.id] === 'cursada') globalCursadaHours += el.annualHours;
     });
+  });
 
+  const globalTotalActive = globalCursadaHours + globalAprobadaHours;
+  
+  // Umbrales globales: 3ro (4hs), 4to (10hs), 5to (20hs)
+  const thresholds = { 3: 4, 4: 10, 5: 20 };
+
+  // Evaluamos cada placeholder (la tarjetita gris de requisitos)
+  [3, 4, 5].forEach(lvl => {
     const placeholder = ALL.find(s => s.isElectivePlaceholder && s.level === lvl);
     if (!placeholder) return;
 
-    const totalActive = cursadaHours + aprobadaHours;
+    const target = thresholds[lvl];
 
-    if (aprobadaHours >= placeholder.targetHours) {
+    if (globalAprobadaHours >= target) {
       state[placeholder.id] = 'aprobada';
-    } else if (totalActive >= placeholder.targetHours) {
+    } else if (globalTotalActive >= target) {
       state[placeholder.id] = 'cursada';
     } else {
       state[placeholder.id] = 'available';
@@ -374,21 +383,28 @@ function refreshAll() {
     card.querySelector('.subject-status-icon').textContent = icon;
 
     if (s.isElectivePlaceholder) {
-      let cursadaHours = 0;
-      let aprobadaHours = 0;
-      ELECTIVAS[s.level].forEach(el => {
-         if (state[el.id] === 'aprobada') aprobadaHours += el.annualHours;
-         else if (state[el.id] === 'cursada') cursadaHours += el.annualHours;
+      let globalCursadaHours = 0;
+      let globalAprobadaHours = 0;
+      
+      [3, 4, 5].forEach(l => {
+        if(!ELECTIVAS[l]) return;
+        ELECTIVAS[l].forEach(el => {
+           if (state[el.id] === 'aprobada') globalAprobadaHours += el.annualHours;
+           else if (state[el.id] === 'cursada') globalCursadaHours += el.annualHours;
+        });
       });
-      const totalActive = cursadaHours + aprobadaHours;
+
+      const globalTotalActive = globalCursadaHours + globalAprobadaHours;
+      const thresholds = { 3: 4, 4: 10, 5: 20 };
+      const target = thresholds[s.level];
       const cardHoursEl = card.querySelector('.subject-hours');
       
-      if (aprobadaHours >= s.targetHours) {
-         cardHoursEl.textContent = `Aprobado: ${aprobadaHours}/${s.targetHours} hs`;
-      } else if (totalActive >= s.targetHours) {
-         cardHoursEl.textContent = `Cursado: ${totalActive}/${s.targetHours} hs`;
+      if (globalAprobadaHours >= target) {
+         cardHoursEl.textContent = `Aprobado: ${globalAprobadaHours}/${target} hs`;
+      } else if (globalTotalActive >= target) {
+         cardHoursEl.textContent = `Cursado: ${globalTotalActive}/${target} hs`;
       } else {
-         cardHoursEl.textContent = `Progreso: ${totalActive}/${s.targetHours} hs`;
+         cardHoursEl.textContent = `Progreso: ${globalTotalActive}/${target} hs`;
       }
     }
   });
@@ -429,8 +445,21 @@ function showTooltip(e, subject) {
 }
 
 function moveTooltip(e) {
-  tooltip.style.left = (e.clientX + 12) + 'px';
-  tooltip.style.top = (e.clientY + 12) + 'px';
+  let leftPos = e.clientX + 12;
+  let topPos = e.clientY + 12;
+
+  // Si el tooltip se va a salir por la derecha de la pantalla, lo tiramos para la izquierda del dedo
+  if (leftPos + tooltip.offsetWidth > window.innerWidth) {
+    leftPos = e.clientX - tooltip.offsetWidth - 12;
+  }
+
+  // Si se va a salir por abajo de la pantalla, lo tiramos para arriba
+  if (topPos + tooltip.offsetHeight > window.innerHeight) {
+    topPos = e.clientY - tooltip.offsetHeight - 12;
+  }
+
+  tooltip.style.left = leftPos + 'px';
+  tooltip.style.top = topPos + 'px';
 }
 
 function hideTooltip() {
@@ -574,26 +603,34 @@ function openWelcomeModal() {
     updateModalUI();
   }
 }
+// ─── LÓGICA DE LA SIDEBAR (MENÚ HAMBURGUESA) ───
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebar-overlay');
 
-// ─── OCULTAR HEADER Y MOSTRAR BOTÓN ARRIBA AL SCROLLEAR ───
-const header = document.querySelector('header');
-const scrollTopBtn = document.getElementById('btn-scroll-top');
-
-window.addEventListener('scroll', () => {
-  if (window.scrollY > 20) {
-    if(header) header.classList.add('scrolled');
-    if (scrollTopBtn) scrollTopBtn.classList.add('visible');
+function toggleSidebar() {
+  sidebar.classList.toggle('active');
+  sidebarOverlay.classList.toggle('active');
+  // Ocultamos el scroll del body cuando el menú está abierto para que no baje la página de fondo
+  if (sidebar.classList.contains('active')) {
+    document.body.style.overflow = 'hidden';
   } else {
-    if(header) header.classList.remove('scrolled');
-    if (scrollTopBtn) scrollTopBtn.classList.remove('visible');
+    document.body.style.overflow = '';
+  }
+}
+
+// ─── MOSTRAR BOTÓN ARRIBA AL SCROLLEAR ───
+const scrollTopBtn = document.getElementById('btn-scroll-top');
+// (Eliminamos la lógica vieja que ocultaba el header, ahora el header queda fijo siempre)
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 200) { 
+    scrollTopBtn.classList.add('visible');
+  } else {
+    scrollTopBtn.classList.remove('visible');
   }
 }, { passive: true });
 
 function scrollToTop() {
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth' 
-  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
