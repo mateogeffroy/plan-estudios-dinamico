@@ -663,21 +663,21 @@ button {
   }
 }
 
-/* ─── SIDEBAR & HAMBURGER (Base) ─── */
+/*SIDEBAR Y BURGER ICON*/
 .header-content {
   display: flex;
   justify-content: space-between;
-  align-items: center; /* Alinea los elementos verticalmente al medio en PC */
+  align-items: center;
   width: 100%;
 }
+
 .header-left {
   display: flex;
-  flex-direction: row; /* ¡Esta es la clave! Obliga a que estén al lado en PC */
+  flex-direction: row;
   align-items: center;
-  gap: 30px; /* Separación elegante entre el título y la leyenda */
+  gap: 30px;
 }
 
-/* Le agregamos !important para aniquilar cualquier regla rebelde que intente mostrarlos donde no deben */
 .mobile-only { display: none !important; }
 .desktop-only { display: flex !important; }
 
@@ -743,27 +743,26 @@ button {
   border-radius: 50%; font-size: 0.7rem; font-weight: bold;
 }
 
-/* ─── AJUSTES PARA CELULARES ─── */
+/*AJUSTES PARA CELULARES (media querys)*/
 @media (max-width: 768px) {
   .desktop-only { display: none !important; }
   .mobile-only { display: flex !important; }
 
   header {
     padding: 15px 20px;
-    background: rgba(13, 15, 20, 0.98); /* Siempre con fondo sólido en celular */
+    background: rgba(13, 15, 20, 0.98);
   }
 
   .header-content {
-    align-items: flex-start; /* Sube el botón hamburguesa para que quede alineado al título */
+    align-items: flex-start;
   }
 
   .header-left {
-    flex-direction: column; /* En celular volvemos a apilar el título y la leyenda */
+    flex-direction: column;
     align-items: flex-start;
     gap: 5px;
   }
 
-  /* La leyenda envuelve bien en dos renglones si hace falta */
   .legend {
     margin-top: 10px;
     gap: 10px 15px;
@@ -787,11 +786,10 @@ button {
   }
 
   .subject-name {
-    font-size: 0.72rem; /* Apenitas más chico para que 3 columnas respiren mejor */
+    font-size: 0.72rem;
     line-height: 1.2;
     margin: 4px 0;
     flex-grow: 1;
-    /* La magia para que las palabras largas no rompan la pantalla */
     word-break: break-word;
     overflow-wrap: break-word;
   }
@@ -814,7 +812,7 @@ button {
   }
 
   .subject-grid {
-    display: grid; /* ¡Esta es la línea mágica que faltaba! */
+    display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
   }
@@ -826,15 +824,10 @@ button {
   }
 }
 
-/* ─── RESALTADO DE MATERIA BLOQUEADA (UX) ─── */
 .subject-card.highlight-blocked {
-  /* Forzamos el borde rojo suave sobre el borde disabled */
   border-color: #ef4444 !important;
-  /* Glow rojo leve */
   box-shadow: 0 0 12px rgba(239, 68, 68, 0.4) !important;
-  /* Un pequeñísimo efecto de 'pop' hacia arriba */
   transform: translateY(-2px);
-  /* Aseguramos que se vea por encima de las otras tarjetas */
   z-index: 50; 
   transition: all 0.2s ease;
 }

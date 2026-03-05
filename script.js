@@ -1,11 +1,8 @@
-// ─── INIT SUPABASE Y ESTADO ───
 const supabaseUrl = 'https://dicrulugptkxedhhfysq.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpY3J1bHVncHRreGVkaGhmeXNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NjkzMDAsImV4cCI6MjA4ODI0NTMwMH0.ZHp7Ab_9vOBAUuMyPpPTf7CxDtpudbUGFwYD_iaG0qQ';
-// ¡CORRECCIÓN! Usamos "supabaseClient" para no chocar con el global de Supabase
 const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 const state = {}; 
-// ─── DICCIONARIO DE ICONOS (SVGs) ───
 const ICONS = {
   aprobada: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`,
   cursada: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>`,
@@ -16,7 +13,6 @@ const SAVED_STATE_KEY = 'planSistemasState_v1';
 const HAS_VISITED_KEY = 'planSistemasVisited';
 let currentUser = null;
 
-// Inicializamos todo bloqueado por defecto
 ALL.forEach(s => state[s.id] = 'disabled');
 SUBJECTS.filter(s => s.level === 1).forEach(s => state[s.id] = 'available');
 
@@ -36,10 +32,8 @@ async function initSession() {
       return;
     }
 
-    // --- SI LLEGA ACÁ, ES PORQUE ESTÁ LOGUEADO Y EN EL INDEX ---
     currentUser = session.user;
     
-    // Traemos el progreso de la nube
     const { data, error } = await supabaseClient
       .from('progreso_usuarios')
       .select('estado_materias')
@@ -49,17 +43,14 @@ async function initSession() {
     if (data && data.estado_materias) {
       Object.assign(state, data.estado_materias);
     } else if (error && error.code === 'PGRST116') {
-      // 1. Le creamos su primera fila en la base de datos
       await supabaseClient.from('progreso_usuarios').insert({
         id_usuario: currentUser.id,
         estado_materias: state
       });
       
-      // 2. ¡Lanzamos el modal de bienvenida porque es 100% nuevo!
       openWelcomeModal();
     }
 
-    // Solo actualizamos la UI si estamos en el index
     updateAllAvailability();
     updateElectivePlaceholders();
     refreshAll();
@@ -91,7 +82,6 @@ async function saveProgress() {
   }
 }
 
-// ─── RENDER ────────────────────────────────────────────────────────────────────
 const LEVEL_COLORS = { 1:'--n1', 2:'--n2', 3:'--n3', 4:'--n4', 5:'--n5' };
 const LEVEL_NAMES = { 1:'Primer Nivel', 2:'Segundo Nivel', 3:'Tercer Nivel', 4:'Cuarto Nivel', 5:'Quinto Nivel' };
 
@@ -123,7 +113,6 @@ function updateElectivePlaceholders() {
   let globalCursadaHours = 0;
   let globalAprobadaHours = 0;
 
-  // Sumamos TODAS las electivas tocadas en la carrera
   [3, 4, 5].forEach(lvl => {
     const electivesOfLevel = ELECTIVAS[lvl];
     if (!electivesOfLevel) return;
@@ -136,10 +125,8 @@ function updateElectivePlaceholders() {
 
   const globalTotalActive = globalCursadaHours + globalAprobadaHours;
   
-  // Umbrales globales: 3ro (4hs), 4to (10hs), 5to (20hs)
   const thresholds = { 3: 4, 4: 10, 5: 20 };
 
-  // Evaluamos cada placeholder (la tarjetita gris de requisitos)
   [3, 4, 5].forEach(lvl => {
     const placeholder = ALL.find(s => s.isElectivePlaceholder && s.level === lvl);
     if (!placeholder) return;
@@ -177,24 +164,19 @@ const icon = state[subject.id] === 'cursada' ? ICONS.cursada
     div.addEventListener('click', (e) => {
     e.stopPropagation(); 
 
-    // Guardamos si ESTA tarjeta específica ya estaba roja antes de limpiar todo
     const wasAlreadyHighlighted = div.classList.contains('highlight-blocked');
 
-    // Limpiamos cualquier resaltado rojo en toda la página
     document.querySelectorAll('.subject-card.highlight-blocked').forEach(c => {
       c.classList.remove('highlight-blocked');
     });
 
     if (window.matchMedia("(pointer: coarse)").matches) {
-      // --- LÓGICA PARA CELULARES ---
       const isBlocked = state[subject.id] !== 'available' && state[subject.id] !== 'cursada' && state[subject.id] !== 'aprobada';
 
       if (isBlocked) {
         if (wasAlreadyHighlighted) {
-          // Si ya estaba en rojo y la volvimos a tocar, solo apagamos el cartel (Efecto Toggle)
           hideTooltip();
         } else {
-          // Si era una nueva, la prendemos y mostramos el cartel
           div.classList.add('highlight-blocked');
           showTooltip(e, subject);
           document.getElementById('action-menu').style.display = 'none'; 
@@ -204,7 +186,6 @@ const icon = state[subject.id] === 'cursada' ? ICONS.cursada
         openActionMenu(subject.id, div);
       }
     } else {
-      // --- LÓGICA PARA PC ---
       handleClick(subject.id, 'aprobada');
     }
   });
@@ -222,14 +203,12 @@ const icon = state[subject.id] === 'cursada' ? ICONS.cursada
   }
 
   div.addEventListener('mousemove', (e) => {
-    // Si NO es una pantalla táctil (celular), permitimos que el cartel siga al mouse
     if (!window.matchMedia("(pointer: coarse)").matches) {
       showTooltip(e, subject);
     }
   });
 
   div.addEventListener('mouseleave', () => {
-    // Si NO es una pantalla táctil, permitimos que el cartel se esconda al sacar el mouse
     if (!window.matchMedia("(pointer: coarse)").matches) {
       hideTooltip();
     }
@@ -270,7 +249,6 @@ function handleClick(id, action) {
   }
 }
 
-// ─── LÓGICA DEL MENÚ DESPLEGABLE ───
 let currentSelectedId = null;
 const actionMenu = document.getElementById('action-menu');
 
@@ -282,22 +260,18 @@ function openActionMenu(id, cardElement) {
   
   hideTooltip(); 
 
-  // Forzamos la posición 'fixed' para anclarlo a las coordenadas de la pantalla
   actionMenu.style.position = 'fixed';
   actionMenu.style.display = 'flex';
   
   const rect = cardElement.getBoundingClientRect();
   
-  // Anclamos exactamente al límite inferior izquierdo de la tarjeta + 4px de aire
   let topPos = rect.bottom + 4;
   let leftPos = rect.left;
   
-  // Si se cae por el borde inferior de la pantalla, lo damos vuelta (arriba de la tarjeta)
   if (topPos + actionMenu.offsetHeight > window.innerHeight) {
     topPos = rect.top - actionMenu.offsetHeight - 4;
   }
   
-  // Si se sale por el lado derecho (raro en este layout, pero por las dudas)
   if (leftPos + actionMenu.offsetWidth > window.innerWidth) {
     leftPos = window.innerWidth - actionMenu.offsetWidth - 10;
   }
@@ -351,9 +325,8 @@ function closeActionMenu() {
 document.addEventListener('click', (e) => {
   if (actionMenu && !actionMenu.contains(e.target) && !e.target.closest('.subject-card')) {
     closeActionMenu();
-    hideTooltip(); // Escondemos el cuadrito negro de correlatividades
+    hideTooltip();
     
-    // Apagamos el resaltado rojo de la materia bloqueada
     document.querySelectorAll('.subject-card.highlight-blocked').forEach(c => {
       c.classList.remove('highlight-blocked');
     });
@@ -400,7 +373,6 @@ async function resetProgress() {
     localStorage.removeItem('hasSeenAnalistaModal');
     localStorage.removeItem('hasSeenIngenieroModal');
     
-    // Usamos supabaseClient
     if (currentUser) {
        const blankState = {};
        ALL.forEach(s => blankState[s.id] = 'disabled');
@@ -451,7 +423,6 @@ function refreshAll() {
   });
 }
 
-// ─── TOOLTIP ──────────────────────────────────────────────────────────────────
 const tooltip = document.getElementById('tooltip');
 
 function showTooltip(e, subject) {
@@ -461,13 +432,10 @@ function showTooltip(e, subject) {
     lines.push(`🎯 Requiere: ${subject.targetHours} hs anuales`);
     lines.push(`Aprobando electivas de ${subject.level}° nivel.`);
   } else {
-    // Variable para controlar si ya pusimos el título principal
     let hasTitle = false;
 
-    // --- CURSADAS ---
     if (subject.correlCursada?.length) {
       if (!hasTitle) {
-        // Título principal con el color de acento
         lines.push('<span style="font-size: 0.8rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em;">Correlativas</span>');
         hasTitle = true;
       }
@@ -475,7 +443,6 @@ function showTooltip(e, subject) {
       
       subject.correlCursada.forEach(cid => {
         const s = getSubjectById(cid);
-        // Limpiamos los paréntesis usando Regex (ej: "Legislación (2° Cuat.)" -> "Legislación")
         const cleanName = s ? s.name.replace(/\s*\(.*?\)/g, '') : cid;
         const ok = state[cid] === 'cursada' || state[cid] === 'aprobada';
         
@@ -483,7 +450,6 @@ function showTooltip(e, subject) {
       });
     }
     
-    // --- APROBADAS ---
     if (subject.correlAprobada?.length) {
       if (!hasTitle) {
         lines.push('<span style="font-size: 0.8rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em;">Correlativas</span>');
@@ -493,7 +459,6 @@ function showTooltip(e, subject) {
       
       subject.correlAprobada.forEach(cid => {
         const s = getSubjectById(cid);
-        // Limpiamos los paréntesis
         const cleanName = s ? s.name.replace(/\s*\(.*?\)/g, '') : cid;
         const ok = state[cid] === 'aprobada';
         
@@ -509,7 +474,6 @@ function showTooltip(e, subject) {
   tooltip.innerHTML = lines.join('<br>');
   tooltip.classList.add('show');
   
-  // Pequeño truco extra: Alineamos el texto a la izquierda para que los emojis queden encolumnados
   tooltip.style.textAlign = 'left';
   
   moveTooltip(e);
@@ -519,23 +483,18 @@ function moveTooltip(e) {
   let leftPos = e.clientX + 12;
   let topPos = e.clientY + 12;
 
-  // 1. Si se va a salir por la derecha, lo tiramos a la izquierda del dedo
   if (leftPos + tooltip.offsetWidth > window.innerWidth) {
     leftPos = e.clientX - tooltip.offsetWidth - 12;
   }
 
-  // 2. ¡EL ARREGLO! Si después de ese cálculo queda en negativo (se sale por la izquierda), 
-  // lo anclamos rígidamente al borde izquierdo de la pantalla con un margen de 12px.
   if (leftPos < 12) {
     leftPos = 12;
   }
 
-  // 3. Si se va a salir por abajo de la pantalla, lo tiramos para arriba
   if (topPos + tooltip.offsetHeight > window.innerHeight) {
     topPos = e.clientY - tooltip.offsetHeight - 12;
   }
 
-  // 4. Por las dudas, si se sale por arriba (muy raro, pero sumamos el tope)
   if (topPos < 12) {
     topPos = 12;
   }
@@ -549,10 +508,11 @@ function hideTooltip() {
 }
 
 document.addEventListener('mousemove', (e) => {
-  if (tooltip.classList.contains('show')) moveTooltip(e);
+  if (typeof tooltip !== 'undefined' && tooltip && tooltip.classList.contains('show')) {
+    moveTooltip(e);
+  }
 });
 
-// ─── STATS ────────────────────────────────────────────────────────────────────
 function updateStats() {
   const coreSubjects = ALL.filter(s => typeof s.id === 'number' || s.id === 'SEM' || s.id === 'PPS');
   const realElectives = ALL.filter(s => s.annualHours !== undefined);
@@ -575,7 +535,6 @@ function updateStats() {
   document.getElementById('stat-pct').textContent = pct + '% aprobado';
 }
 
-// ─── BUILD DOM ────────────────────────────────────────────────────────────────
 function buildLayout() {
   const main = document.getElementById('main-content');
   main.innerHTML = '';
@@ -624,7 +583,6 @@ function buildLayout() {
   });
 }
 
-// ─── MODAL LOGIC ──────────────────────────────────────────────────────────────
 let currentSlide = 1;
 const totalSlides = 3; 
 
@@ -685,14 +643,12 @@ function openWelcomeModal() {
     updateModalUI();
   }
 }
-// ─── LÓGICA DE LA SIDEBAR (MENÚ HAMBURGUESA) ───
 const sidebar = document.getElementById('sidebar');
 const sidebarOverlay = document.getElementById('sidebar-overlay');
 
 function toggleSidebar() {
   sidebar.classList.toggle('active');
   sidebarOverlay.classList.toggle('active');
-  // Ocultamos el scroll del body cuando el menú está abierto para que no baje la página de fondo
   if (sidebar.classList.contains('active')) {
     document.body.style.overflow = 'hidden';
   } else {
@@ -700,9 +656,7 @@ function toggleSidebar() {
   }
 }
 
-// ─── MOSTRAR BOTÓN ARRIBA AL SCROLLEAR ───
 const scrollTopBtn = document.getElementById('btn-scroll-top');
-// (Eliminamos la lógica vieja que ocultaba el header, ahora el header queda fijo siempre)
 window.addEventListener('scroll', () => {
   if (window.scrollY > 200) { 
     scrollTopBtn.classList.add('visible');
@@ -715,8 +669,6 @@ function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ─── INIT ─────────────────────────────────────────────────────────────────────
 buildLayout();
 checkFirstVisit();
-// InitSession se encarga ahora de actualizar la disponibilidad y pintar todo luego de consultar la BD.
 initSession();
