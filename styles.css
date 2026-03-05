@@ -33,12 +33,17 @@
   padding: 0;
 }
 
+html, body {
+  overflow-x: hidden;
+  position: relative;
+  width: 100%;
+}
+
 body {
   background: var(--bg);
   color: var(--text);
   font-family: 'Syne', sans-serif;
   min-height: 100vh;
-  overflow-x: hidden;
 }
 
 header {
@@ -699,16 +704,17 @@ button {
 .sidebar-overlay.active { opacity: 1; pointer-events: auto; }
 
 .sidebar {
-  position: fixed; top: 0; right: -300px;
+  position: fixed; top: 0; right: 0;
   width: 280px; height: 100%;
   background: var(--panel);
   border-left: 1px solid var(--border);
   z-index: 1001;
   box-shadow: -5px 0 25px rgba(0,0,0,0.5);
-  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex; flex-direction: column;
 }
-.sidebar.active { right: 0; }
+.sidebar.active { transform: translateX(0); }
 
 .sidebar-header {
   display: flex; justify-content: space-between; align-items: center;
@@ -781,10 +787,13 @@ button {
   }
 
   .subject-name {
-    font-size: 0.8rem;
+    font-size: 0.72rem; /* Apenitas más chico para que 3 columnas respiren mejor */
     line-height: 1.2;
     margin: 4px 0;
     flex-grow: 1;
+    /* La magia para que las palabras largas no rompan la pantalla */
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
 
   .stats-bar {
