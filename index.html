@@ -8,7 +8,37 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  
+  <div id="modal-actualizacion" class="modal-overlay" style="display: none;">
+    <div class="modal-box" style="text-align: center; max-width: 500px;">
+      <div id="paso-1">
+        <h2 style="color: var(--accent);">🚀 Plan Actualizado</h2>
+        <p style="line-height: 1.6;">Con la actualización de los horarios subida el día <b>06/03/2026</b>, las materias disponibles y su duración se actualizaron en el sistema.</p>
+        <p style="color: var(--muted); font-size: 0.9rem;">Ahora la web es 100% fiel y confiable al plan de estudios vigente.</p>
+        <button class="btn-primary" onclick="siguientePasoActualizacion()" style="margin-top: 20px; width: 100%;">Siguiente</button>
+      </div>
+
+      <div id="paso-2" style="display: none;">
+        <h2 style="color: var(--accent);">¡Gracias por el feedback!</h2>
+        <p style="line-height: 1.6;">Agradezco a los más de <b>100 usuarios</b> que se registraron. Gracias a su apoyo, seguiré trabajando en mejorar y agregar nuevas funciones al proyecto.</p>
+        <p style="font-size: 0.9rem;">Al ser un servicio gratuito, considerá hacer una donación para ayudar con el mantenimiento del servidor ;)</p>
+        
+        <a href="https://cafecito.app/mateogeffroy" target="_blank" style="text-decoration: none;">
+          <button style="display: flex; gap: 10px; align-items: center; justify-content: center; width: 100%; padding: 12px; font-size: 1rem; margin: 20px 0; border-radius: 8px; font-weight: 600; cursor: pointer; background-color: #FF9900; color: #111111; border: none; font-family: inherit; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+              <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+              <line x1="6" y1="1" x2="6" y2="4"></line>
+              <line x1="10" y1="1" x2="10" y2="4"></line>
+              <line x1="14" y1="1" x2="14" y2="4"></line>
+            </svg>
+            Invitame un cafecito
+          </button>
+        </a>
+
+        <button class="btn-primary" onclick="cerrarModalActualizacion()" style="width: 100%; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; border: none;">Entendido</button>
+      </div>
+    </div>
+  </div>
   <div id="welcome-modal" class="modal-overlay" style="display: none;">
     <div class="modal-box">
       <div class="carousel-slide active" id="slide-1">

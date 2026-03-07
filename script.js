@@ -1,6 +1,7 @@
 const supabaseUrl = 'https://dicrulugptkxedhhfysq.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpY3J1bHVncHRreGVkaGhmeXNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NjkzMDAsImV4cCI6MjA4ODI0NTMwMH0.ZHp7Ab_9vOBAUuMyPpPTf7CxDtpudbUGFwYD_iaG0qQ';
 const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+const CLAVE_MODAL_ACTUALIZACION = 'planSistemasUpdate_060326';
 
 const state = {}; 
 const ICONS = {
@@ -15,6 +16,22 @@ let currentUser = null;
 
 ALL.forEach(s => state[s.id] = 'disabled');
 SUBJECTS.filter(s => s.level === 1).forEach(s => state[s.id] = 'available');
+
+function verificarActualizacionPlan() {
+  if (!localStorage.getItem(CLAVE_MODAL_ACTUALIZACION)) {
+    document.getElementById('modal-actualizacion').style.display = 'flex';
+  }
+}
+
+function siguientePasoActualizacion() {
+  document.getElementById('paso-1').style.display = 'none';
+  document.getElementById('paso-2').style.display = 'block';
+}
+
+function cerrarModalActualizacion() {
+  document.getElementById('modal-actualizacion').style.display = 'none';
+  localStorage.setItem(CLAVE_MODAL_ACTUALIZACION, 'true');
+}
 
 async function initSession() {
   const { data: { session } } = await supabaseClient.auth.getSession();
@@ -672,3 +689,4 @@ function scrollToTop() {
 buildLayout();
 checkFirstVisit();
 initSession();
+verificarActualizacionPlan();
