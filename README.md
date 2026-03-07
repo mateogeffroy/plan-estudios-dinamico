@@ -2,7 +2,7 @@
 
 Una herramienta web interactiva diseñada para los estudiantes de **Ingeniería en Sistemas de Información** de la **Universidad Tecnológica Nacional (Facultad Regional La Plata)**. Permite llevar un control visual y preciso del progreso académico, validando correlatividades y calculando las horas de materias electivas automáticamente.
 
-🌍 **[Visitar la aplicación en vivo]https://plan-estudios-dinamico.vercel.app**
+🌍 **[Visitar la aplicación en vivo](https://plan-estudios-dinamico.vercel.app)**
 
 ---
 
@@ -36,21 +36,21 @@ Si querés clonar el repositorio para aportar mejoras o probar el código localm
 1. **Clonar el repositorio:**
    Ejecutá en tu terminal
    ```bash
-   git clone https://github.com/TU_USUARIO/plan-estudios-utn.git
-   cd plan-estudios-utn
+   git clone https://github.com/mateogeffroy/plan-estudios-dinamico.git
+   cd plan-estudios-dinamico
    ```
 
 2. **Configurar Supabase:**
    - Creá un proyecto en Supabase.
    - Configurá la autenticación con Google.
    - Ejecutá en tu base de datos para crear la tabla necesaria.
-   ```sql
+   ```
    create table progreso_usuarios (
-  id_usuario uuid references auth.users not null primary key,
-  estado_materias jsonb not null default '{}'::jsonb
-  );
-  -- No olvides habilitar RLS y crear las políticas correspondientes.
-  ```
+    id_usuario uuid references auth.users not null primary key,
+    estado_materias jsonb not null default '{}'::jsonb
+    );
+    -- No olvides habilitar RLS y crear las políticas correspondientes.
+   ```
 
 
 3. **Variables de Entorno:**
