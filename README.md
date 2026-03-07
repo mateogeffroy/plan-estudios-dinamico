@@ -44,7 +44,7 @@ Si querés clonar el repositorio para aportar mejoras o probar el código localm
    - Creá un proyecto en Supabase.
    - Configurá la autenticación con Google.
    - Ejecutá en tu base de datos para crear la tabla necesaria.
-   ```
+   ```sql
    create table progreso_usuarios (
     id_usuario uuid references auth.users not null primary key,
     estado_materias jsonb not null default '{}'::jsonb
@@ -72,8 +72,11 @@ Si querés clonar el repositorio para aportar mejoras o probar el código localm
 6. Abrí un Pull Request.
 
 ---
+## Consultas
+Si hay alguna consulta acerca del proyecto o de como cotribuir, podes comunicarte conmigo a mi mail mateogeffroy.dev@gmail.com
+---
 
 ## ☕ Apoyar el Proyecto
-Este proyecto es de código abierto y gratuito, mantenido para ayudar a la comunidad estudiantil de la UTN. Si la herramienta te resulta útil para organizar tu carrera, podés ayudar a cubrir los costos de mantenimiento de los servidores invitándome un café:
+Este proyecto es de código abierto y gratuito, mantenido para ayudar a la comunidad estudiantil de la UTN. Si la herramienta te resulta útil para organizar tu carrera, podés ayudar a cubrir los costos de mantenimiento de los servidores invitándome un **[café](https://cafecito.app/mateogeffroy)**:
 
-Desarrollado con 💻 y 🧉 por Mateo Arturo Geffroy.
+Desarrollado por Mateo Arturo Geffroy.
