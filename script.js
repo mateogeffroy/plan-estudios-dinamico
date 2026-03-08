@@ -166,9 +166,9 @@ function renderCard(subject) {
   div.id = 'card-' + subject.id;
   div.dataset.id = subject.id;
 
-const icon = state[subject.id] === 'cursada' ? ICONS.cursada
-           : state[subject.id] === 'aprobada' ? ICONS.aprobada
-           : state[subject.id] === 'available' ? ICONS.available : ICONS.bloqueada;
+  const icon = state[subject.id] === 'cursada' ? ICONS.cursada
+             : state[subject.id] === 'aprobada' ? ICONS.aprobada
+             : state[subject.id] === 'available' ? ICONS.available : ICONS.bloqueada;
 
   div.innerHTML = `
     <div class="subject-num">${subject.num}</div>
@@ -561,13 +561,57 @@ function buildLayout() {
     section.className = 'level-section';
 
     const color = `var(${LEVEL_COLORS[lvl]})`;
-    section.innerHTML = `
-      <div class="level-header">
-        <div class="level-badge" style="color:${color};border-color:${color};">${LEVEL_NAMES[lvl]}</div>
-        <div class="level-line" style="background:${color}"></div>
-      </div>
-    `;
+    
+    // Contenedor principal del header
+    const headerDiv = document.createElement('div');
+    headerDiv.className = 'level-header';
+    headerDiv.style.color = color;
 
+    // Badge
+    const badgeDiv = document.createElement('div');
+    badgeDiv.className = 'level-badge';
+    badgeDiv.style.borderColor = color;
+    badgeDiv.textContent = LEVEL_NAMES[lvl];
+
+    // Botón Marcar todas
+    const markAllBtn = document.createElement('button');
+    markAllBtn.className = 'mark-all-btn';
+    markAllBtn.textContent = 'Marcar todas';
+    
+    markAllBtn.onclick = () => {
+      const materiasObligatorias = SUBJECTS.filter(s => 
+        s.level === lvl && 
+        !s.isElective && 
+        !s.isElectivePlaceholder && 
+        !s.isSeminario && 
+        s.id !== 'PPS'
+      );
+
+      materiasObligatorias.forEach(materia => {
+        state[materia.id] = 'aprobada';
+      });
+
+      updateAllAvailability();
+      updateElectivePlaceholders(); 
+      checkMilestones(); 
+      refreshAll();
+      updateStats(); 
+      saveProgress(); 
+    };
+
+    // Línea separadora
+    const lineDiv = document.createElement('div');
+    lineDiv.className = 'level-line';
+    lineDiv.style.backgroundColor = color;
+
+    // Ensamblar
+    headerDiv.appendChild(badgeDiv);
+    headerDiv.appendChild(markAllBtn);
+    headerDiv.appendChild(lineDiv);
+    
+    section.appendChild(headerDiv);
+
+    // Renderizar materias
     const grid = document.createElement('div');
     grid.className = 'subject-grid';
 
@@ -576,6 +620,7 @@ function buildLayout() {
     });
     section.appendChild(grid);
 
+    // Renderizar electivas
     if (ELECTIVAS[lvl] && ELECTIVAS[lvl].length > 0) {
       const electivasLabel = document.createElement('div');
       electivasLabel.className = 'electivas-level-label';

@@ -72,8 +72,10 @@ Si querés clonar el repositorio para aportar mejoras o probar el código localm
 6. Abrí un Pull Request.
 
 ---
+
 ## Consultas
 Si hay alguna consulta acerca del proyecto o de como cotribuir, podes comunicarte conmigo a mi mail mateogeffroy.dev@gmail.com
+
 ---
 
 ## ☕ Apoyar el Proyecto

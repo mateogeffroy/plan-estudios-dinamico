@@ -831,3 +831,25 @@ button {
   z-index: 50; 
   transition: all 0.2s ease;
 }
+
+.mark-all-btn {
+  background: transparent;
+  color: var(--muted); /* Usa el gris del tema */
+  border: none; /* Saca el borde */
+  font-family: 'Space Mono', monospace;
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 3px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  opacity: 0.8; /* Un poquito más visible que la línea */
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.mark-all-btn:hover {
+  opacity: 1;
+  color: var(--text); /* Se ilumina un poco al pasar el mouse */
+}
