@@ -60,21 +60,29 @@ const ELECTIVAS = {
     { id:'E4', num:'E3', name:'Sistemas de Transmisión y Redes Inalámbricas (2°Cuatr.)', hours:'4 hs/sem (2 hs anuales)', annualHours: 2, correlCursada:[9], correlAprobada:[7] },
     { id:'E5', num:'E4', name:'Responsabilidad Social e Institucional (1°Cuatr.)', hours:'4 hs/sem (2 hs anuales)', annualHours: 2, correlCursada:[8,16], correlAprobada:[] },
     { id:'E6', num:'E5', name:'Comunicación Profesional',            hours:'3 hs anuales', annualHours: 3, correlCursada:[11], correlAprobada:[8] },
+    // --- MATERIAS FUERA DE PLAN ---
+    { id:'E22', num:'Fuera del plan', name:'Programación Concurrente (1°Cuatr.)', hours:'4 hs/sem (2 hs anuales)', annualHours: 2, correlCursada:[14,15], correlAprobada:[], isOutdated: true },
+    { id:'QMC', num:'Fuera del plan', name:'Química', hours:'6 hs/sem (3 hs anuales)', annualHours: 3, correlCursada:[], correlAprobada:[], isOutdated: true, onlyIngenieria: true },
+    { id:'SDR', num:'Fuera del plan', name:'Sistemas de Representación', hours:'6 hs/sem (3 hs anuales)', annualHours: 3, correlCursada:[], correlAprobada:[], isOutdated: true },
   ],
   4: [
-    { id:'E7', num:'E6', name:'Administración de Base de Datos (2°Cuatr.)', hours:'4 hs/sem (2 hs anuales)', annualHours: 2, correlCursada:[15], correlAprobada:[19] },
+    { id:'E7', num:'E6', name:'Administración de Base de Datos (2°Cuatr.)', hours:'4 hs/sem (2 hs anuales)', annualHours: 2, correlCursada:[19], correlAprobada:[15] },
     { id:'E8', num:'E7', name:'Desarrollo de Software Cloud (2°Cuatr.)', hours:'4 hs/sem (2 hs anuales)', annualHours: 2, correlCursada:[15,20,23], correlAprobada:[13,14] },
-    { id:'E9', num:'E8', name:'Diseño Inclusivo para Usuarios con Discapacidad (1°Cuatr.)', hours:'4 hs/sem (2 hs anuales)', annualHours: 2, correlCursada:[16], correlAprobada:[23] },
+    { id:'E9', num:'E8', name:'Diseño Inclusivo para Usuarios con Discapacidad (1°Cuatr.)', hours:'4 hs/sem (2 hs anuales)', annualHours: 2, correlCursada:[23], correlAprobada:[16] },
     { id:'E11', num:'E9', name:'Metodologías Agiles (2°Cuatr.)',     hours:'6 hs/sem (3 hs anuales)', annualHours: 3, correlCursada:[19,20,23], correlAprobada:[16] },
     { id:'E13', num:'E10', name:'Tecnologías para la Explotación de la Información (1ª Cuatr.)', hours:'4 hs/sem (2 hs anuales)', annualHours: 2, correlCursada:[17,23], correlAprobada:[14] },
-    { id:'E14', num:'E11', name:'Aplicaciones Moviles (1°Cuatr.)',   hours:'6 hs/sem (3 hs anuales)', annualHours: 3, correlCursada:[14,23], correlAprobada:[6] },
+    { id:'E14', num:'E11', name:'Aplicaciones Moviles (1°Cuatr.)',   hours:'4 hs/sem (2 hs anuales)', annualHours: 2, correlCursada:[14,23], correlAprobada:[6] },
+    // --- MATERIAS FUERA DE PLAN ---
+    { id:'E23', num:'Fuera del plan', name:'Metodología de la Investigación (2°Cuatr.)', hours:'4 hs/sem (2 hs anuales)', annualHours: 2, correlCursada:[23], correlAprobada:[], isOutdated: true },
+    { id:'E24', num:'Fuera del plan', name:'Tecnología de Interfaces Interactivas (2°Cuatr.)', hours:'4 hs/sem (2 hs anuales)', annualHours: 2, correlCursada:[16], correlAprobada:[23], isOutdated: true },
   ],
   5: [
     { id:'E15', num:'E12', name:'Ingeniería en Calidad',              hours:'3 hs anuales', annualHours: 3, correlCursada:[30], correlAprobada:[23] },
-    { id:'E17', num:'E13', name:'Protocolos y Seguridad en Redes Inalámbricas (2°Cuatr.)', hours:'4 hs/sem (2 hs anuales)', annualHours: 2, correlCursada:[9,10], correlAprobada:[21,26] },
+    { id:'E17', num:'E13', name:'Protocolos y Seguridad en Redes Inalámbricas (2°Cuatr.)', hours:'4 hs/sem (2 hs anuales)', annualHours: 2, correlCursada:[21,26], correlAprobada:[9,10] },
     { id:'E18', num:'E14', name:'Sistemas en la Industria 4.0 (2°Cuatr.)', hours:'6 hs/sem (3 hs anuales)', annualHours: 3, correlCursada:[19,21,25,26], correlAprobada:[7] },
     { id:'E19', num:'E15', name:'Tecnologias de Información para la Gestión Empresarial (1°Cuatr.)', hours:'4 hs/sem (2 hs anuales)', annualHours: 2, correlCursada:[25], correlAprobada:[23] },
     { id:'E20', num:'E16', name:'Emprendedorismo',                   hours:'2 hs anuales', annualHours: 2, correlCursada:[18,24], correlAprobada:[] },
+    { id:'E21', num:'E17', name:'Gestión Operativa y Seguridad en Redes (2° Cuatr.)', hours:'6 hs/sem (3 hs anuales)', annualHours: 3, correlCursada:[], correlAprobada:[26] },
   ]
 };
 

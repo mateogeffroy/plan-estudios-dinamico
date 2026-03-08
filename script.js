@@ -1,7 +1,7 @@
 const supabaseUrl = 'https://dicrulugptkxedhhfysq.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpY3J1bHVncHRreGVkaGhmeXNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NjkzMDAsImV4cCI6MjA4ODI0NTMwMH0.ZHp7Ab_9vOBAUuMyPpPTf7CxDtpudbUGFwYD_iaG0qQ';
 const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
-const CLAVE_MODAL_ACTUALIZACION = 'planSistemasUpdate_060326';
+const CLAVE_MODAL_ACTUALIZACION = 'planSistemasUpdate_080326';
 
 const state = {}; 
 const ICONS = {
@@ -23,9 +23,14 @@ function verificarActualizacionPlan() {
   }
 }
 
-function siguientePasoActualizacion() {
+function cambiarPasoActualizacion(pasoDestino) {
+  // Ocultamos todos los pasos primero
   document.getElementById('paso-1').style.display = 'none';
-  document.getElementById('paso-2').style.display = 'block';
+  document.getElementById('paso-2').style.display = 'none';
+  document.getElementById('paso-3').style.display = 'none';
+  
+  // Mostramos solo el que nos interesa
+  document.getElementById('paso-' + pasoDestino).style.display = 'block';
 }
 
 function cerrarModalActualizacion() {
@@ -127,21 +132,27 @@ function updateAllAvailability() {
 }
 
 function updateElectivePlaceholders() {
-  let globalCursadaHours = 0;
-  let globalAprobadaHours = 0;
+  let globalCursadaHoursAnalista = 0;
+  let globalAprobadaHoursAnalista = 0;
+  let globalCursadaHoursIngenieria = 0;
+  let globalAprobadaHoursIngenieria = 0;
 
   [3, 4, 5].forEach(lvl => {
     const electivesOfLevel = ELECTIVAS[lvl];
     if (!electivesOfLevel) return;
 
     electivesOfLevel.forEach(el => {
-       if (state[el.id] === 'aprobada') globalAprobadaHours += el.annualHours;
-       else if (state[el.id] === 'cursada') globalCursadaHours += el.annualHours;
+       if (state[el.id] === 'aprobada') {
+           globalAprobadaHoursIngenieria += el.annualHours;
+           if (!el.onlyIngenieria) globalAprobadaHoursAnalista += el.annualHours;
+       }
+       else if (state[el.id] === 'cursada') {
+           globalCursadaHoursIngenieria += el.annualHours;
+           if (!el.onlyIngenieria) globalCursadaHoursAnalista += el.annualHours;
+       }
     });
   });
 
-  const globalTotalActive = globalCursadaHours + globalAprobadaHours;
-  
   const thresholds = { 3: 4, 4: 10, 5: 20 };
 
   [3, 4, 5].forEach(lvl => {
@@ -150,9 +161,14 @@ function updateElectivePlaceholders() {
 
     const target = thresholds[lvl];
 
-    if (globalAprobadaHours >= target) {
+    // Seleccionamos las horas correctas según el nivel del placeholder
+    const aprobadaHours = lvl === 3 ? globalAprobadaHoursAnalista : globalAprobadaHoursIngenieria;
+    const cursadaHours = lvl === 3 ? globalCursadaHoursAnalista : globalCursadaHoursIngenieria;
+    const totalActive = aprobadaHours + cursadaHours;
+
+    if (aprobadaHours >= target) {
       state[placeholder.id] = 'aprobada';
-    } else if (globalTotalActive >= target) {
+    } else if (totalActive >= target) {
       state[placeholder.id] = 'cursada';
     } else {
       state[placeholder.id] = 'available';
@@ -357,7 +373,20 @@ document.addEventListener('scroll', () => {
 
 function checkMilestones() {
   const lvl123 = ALL.filter(s => typeof s.id === 'number' && s.level <= 3);
-  const analistaReady = lvl123.every(s => state[s.id] === 'aprobada') && state['REQ3'] === 'aprobada';
+  const coreSubjectsAnalistaReady = lvl123.every(s => state[s.id] === 'aprobada');
+  
+  // --- NUEVO: CÁLCULO INDEPENDIENTE DE HORAS ELECTIVAS PARA ANALISTA ---
+  // Calculamos las horas aprobadas en electivas, pero IGNORANDO Química
+  let horasElectivasAnalista = 0;
+  ALL.forEach(s => {
+      // Si la materia tiene horas anuales definidas, está aprobada y NO es exclusiva de ingeniería (Química)
+      if (s.annualHours && state[s.id] === 'aprobada' && !s.onlyIngenieria) {
+          horasElectivasAnalista += s.annualHours;
+      }
+  });
+  
+  // Analista requiere TODAS las obligatorias de 1-3 y al menos 4 horas de electivas válidas
+  const analistaReady = coreSubjectsAnalistaReady && horasElectivasAnalista >= 4;
   
   if (analistaReady && state['SEM'] === 'cursada') {
     state['SEM'] = 'aprobada'; 
@@ -419,6 +448,9 @@ function refreshAll() {
       [3, 4, 5].forEach(l => {
         if(!ELECTIVAS[l]) return;
         ELECTIVAS[l].forEach(el => {
+           // MAGIA ACÁ: Si es el placeholder de 3er año y la materia es exclusiva de ingeniería, la ignoramos visualmente
+           if (s.level === 3 && el.onlyIngenieria) return;
+
            if (state[el.id] === 'aprobada') globalAprobadaHours += el.annualHours;
            else if (state[el.id] === 'cursada') globalCursadaHours += el.annualHours;
         });
@@ -448,7 +480,11 @@ function showTooltip(e, subject) {
   if (subject.isElectivePlaceholder) {
     lines.push(`🎯 Requiere: ${subject.targetHours} hs anuales`);
     lines.push(`Aprobando electivas de ${subject.level}° nivel.`);
+  } else if (subject.isOutdated) {
+    // --- MATERIAS FANTASMA: Solo mostramos el aviso y cortamos acá ---
+    lines.push('<span style="font-size: 0.75rem; font-weight: 700; color: #ef4444; background: rgba(239, 68, 68, 0.1); padding: 4px 6px; border-radius: 4px; display: inline-block;">⚠️ Materia fuera del plan. Solo marcar si fue cursada/aprobada históricamente.</span>');
   } else {
+    // --- MATERIAS NORMALES: Lógica de correlativas ---
     let hasTitle = false;
 
     if (subject.correlCursada?.length) {
