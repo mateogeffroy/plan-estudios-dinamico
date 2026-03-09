@@ -768,24 +768,33 @@ function scrollToTop() {
 }
 
 function donarMercadoPago() {
-  const linkPago = "https://link.mercadopago.com.ar/planestudios"; 
-  
+  // 1. REEMPLAZÁ CON TU LINK REAL
+  const linkPago = "https://link.mercadopago.com.ar/planestudios" ; 
   const linkSinHttps = "link.mercadopago.com.ar/planestudios"; 
 
   const userAgent = navigator.userAgent || navigator.vendor || window.opera;
   const isAndroid = /android/i.test(userAgent);
-  const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+
+  // 2. Creamos un enlace (<a>) "fantasma" en el código
+  const a = document.createElement('a');
+  a.style.display = 'none';
 
   if (isAndroid) {
-    // Comando forzado para Android (Intent): Busca la app de MP, si no está, abre la web
-    window.location.href = `intent://${linkSinHttps}#Intent;package=com.mercadopago.wallet;scheme=https;S.browser_fallback_url=${encodeURIComponent(linkPago)};end;`;
-  } else if (isIOS) {
-    // En iOS, el sistema intercepta automáticamente los links normales si la app está instalada
-    window.location.href = linkPago;
+    // Código agresivo para forzar la billetera de Mercado Pago en Android
+    a.href = `intent://${linkSinHttps}#Intent;scheme=https;package=com.mercadopago.wallet;action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent(linkPago)};end;`;
   } else {
-    // Si está en una PC de escritorio, abrimos en una pestaña nueva para no sacarlo del plan
-    window.open(linkPago, '_blank');
+    // En iOS (iPhone) y PC usamos el link directo, iOS lo intercepta nativamente con el click
+    a.href = linkPago;
   }
+
+  // 3. Lo inyectamos en la página, lo "clickeamos" por código y lo destruimos
+  document.body.appendChild(a);
+  a.click();
+  
+  // Le damos 100 milisegundos de respiro antes de borrarlo para que el celular procese el salto
+  setTimeout(() => {
+    document.body.removeChild(a);
+  }, 100);
 }
 
 buildLayout();
