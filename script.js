@@ -767,6 +767,27 @@ function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+function donarMercadoPago() {
+  const linkPago = "https://link.mercadopago.com.ar/planestudios"; 
+  
+  const linkSinHttps = "link.mercadopago.com.ar/planestudios"; 
+
+  const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+  const isAndroid = /android/i.test(userAgent);
+  const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+
+  if (isAndroid) {
+    // Comando forzado para Android (Intent): Busca la app de MP, si no está, abre la web
+    window.location.href = `intent://${linkSinHttps}#Intent;package=com.mercadopago.wallet;scheme=https;S.browser_fallback_url=${encodeURIComponent(linkPago)};end;`;
+  } else if (isIOS) {
+    // En iOS, el sistema intercepta automáticamente los links normales si la app está instalada
+    window.location.href = linkPago;
+  } else {
+    // Si está en una PC de escritorio, abrimos en una pestaña nueva para no sacarlo del plan
+    window.open(linkPago, '_blank');
+  }
+}
+
 buildLayout();
 checkFirstVisit();
 initSession();
