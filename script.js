@@ -1,5 +1,6 @@
-const supabaseUrl = 'https://dicrulugptkxedhhfysq.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpY3J1bHVncHRreGVkaGhmeXNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NjkzMDAsImV4cCI6MjA4ODI0NTMwMH0.ZHp7Ab_9vOBAUuMyPpPTf7CxDtpudbUGFwYD_iaG0qQ';
+//Ambas constantes eliminadas por la privacidad de la base de datos y el desuso de este codigo
+const supabaseUrl = '';
+const supabaseKey = ""
 const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 const CLAVE_MODAL_ACTUALIZACION = 'planSistemasUpdate_080326';
 
